@@ -154,6 +154,7 @@ GameModel::GameModel():
 
 	mouseClickRequired = Client::Ref().GetPrefBool("MouseClickRequired", false);
 	includePressure = Client::Ref().GetPrefBool("Simulation.IncludePressure", true);
+	celsiusUnit = Client::Ref().GetPrefBool("CelsiusUnit", false);
 
 	ClearSimulation();
 }
@@ -228,7 +229,6 @@ void GameModel::BuildQuickOptionMenu(GameController * controller)
 	quickOptions.push_back(new DecorationsOption(this));
 	quickOptions.push_back(new NGravityOption(this));
 	quickOptions.push_back(new AHeatOption(this));
-	quickOptions.push_back(new ConsoleShowOption(this, controller));
 
 	notifyQuickOptionsChanged();
 	UpdateQuickOptions();
@@ -1637,6 +1637,11 @@ void GameModel::SetPerfectCircle(bool perfectCircle)
 		this->perfectCircle = perfectCircle;
 		BuildBrushList();
 	}
+}
+
+void GameModel::SetCelsiusUnit(bool celsiusUnit)
+{
+	this->celsiusUnit = celsiusUnit;
 }
 
 bool GameModel::RemoveCustomGOLType(const ByteString &identifier)

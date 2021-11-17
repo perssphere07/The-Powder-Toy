@@ -256,16 +256,16 @@ void GameController::PlaceSave(ui::Point position)
 void GameController::Install()
 {
 #if defined(MACOSX)
-	new InformationMessage("No installation necessary", "You don't need to install The Powder Toy on OS X", false);
+	new InformationMessage("No installation necessary", "You don't need to install The Powder Toy on macOS.", false);
 #elif defined(WIN) || defined(LIN)
 	new ConfirmPrompt("Install The Powder Toy", "Do you wish to install The Powder Toy on this computer?\nThis allows you to open save files and saves directly from the website.", { [] {
 		if (Client::Ref().DoInstallation())
 		{
-			new InformationMessage("Success", "Installation completed", false);
+			new InformationMessage("Success", "Installation completed.", false);
 		}
 		else
 		{
-			new ErrorMessage("Could not install", "The installation did not complete due to an error");
+			new ErrorMessage("Could not install", "The installation did not complete due to an error.");
 		}
 	} });
 #else
@@ -1662,6 +1662,11 @@ void GameController::RunUpdater()
 bool GameController::GetMouseClickRequired()
 {
 	return gameModel->GetMouseClickRequired();
+}
+
+bool GameController::GetCelsiusUnit()
+{
+	return gameModel->GetCelsiusUnit();
 }
 
 void GameController::RemoveCustomGOLType(const ByteString &identifier)

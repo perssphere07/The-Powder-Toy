@@ -1,6 +1,7 @@
 #include "LoginController.h"
 
 #include "client/Client.h"
+#include "common/Platform.h"
 
 #include "LoginView.h"
 #include "LoginModel.h"
@@ -35,6 +36,12 @@ void LoginController::Exit()
 	if (onDone)
 		onDone();
 	HasExited = true;
+}
+
+void LoginController::CreateAccount()
+{
+	ByteString uri = ByteString::Build(SCHEME, SERVER, "/Register.html");
+	Platform::OpenURI(uri);
 }
 
 LoginController::~LoginController()

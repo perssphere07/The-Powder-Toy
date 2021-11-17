@@ -15,13 +15,15 @@
 #include "Misc.h"
 
 LoginView::LoginView():
-	ui::Window(ui::Point(-1, -1), ui::Point(200, 87)),
-	loginButton(new ui::Button(ui::Point(200-100, 87-17), ui::Point(100, 17), "Sign in")),
-	cancelButton(new ui::Button(ui::Point(0, 87-17), ui::Point(101, 17), "Sign Out")),
-	titleLabel(new ui::Label(ui::Point(4, 5), ui::Point(200-16, 16), "Server login")),
-	infoLabel(new ui::Label(ui::Point(8, 67), ui::Point(200-16, 16), "")),
-	usernameField(new ui::Textbox(ui::Point(8, 25), ui::Point(200-16, 17), Client::Ref().GetAuthUser().Username.FromUtf8(), "[username]")),
-	passwordField(new ui::Textbox(ui::Point(8, 46), ui::Point(200-16, 17), "", "[password]")),
+	ui::Window(ui::Point(-1, -1), ui::Point(256, 128)),
+	loginButton(new ui::Button(ui::Point(256-129, 87-17), ui::Point(129, 17), "Sign in")),
+	cancelButton(new ui::Button(ui::Point(0, 87-17), ui::Point(128, 17), "Sign Out")),
+	createAccountButton(new ui::Button(ui::Point(91, 73), ui::Point(61, 17), "Create One!")),
+	titleLabel(new ui::Label(ui::Point(8, 6), ui::Point(256-16, 16), "Sign in")),
+	createAccountLabel(new ui::Label(ui::Point(29, 74), ui::Point(128, 16), "No account?")),
+	infoLabel(new ui::Label(ui::Point(8, 67), ui::Point(256-16, 16), "")),
+	usernameField(new ui::Textbox(ui::Point(32, 30), ui::Point(192, 17), Client::Ref().GetAuthUser().Username.FromUtf8(), " Username")),
+	passwordField(new ui::Textbox(ui::Point(32, 56), ui::Point(192, 17), "", " Password")),
 	targetSize(0, 0)
 {
 	targetSize = Size;
@@ -44,17 +46,28 @@ LoginView::LoginView():
 	cancelButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	cancelButton->SetActionCallback({ [this] { c->Exit(); } });
 	AddComponent(titleLabel);
+	createAccountLabel->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	createAccountLabel->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
+	AddComponent(createAccountLabel);
+	createAccountButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	createAccountButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
+	createAccountButton->Appearance.TextInactive = style::Colour::Hyperlink;
+	createAccountButton->Appearance.Border = 0;
+	createAccountButton->SetActionCallback({ [this] { c->CreateAccount(); }});
+	AddComponent(createAccountButton);
 	titleLabel->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	titleLabel->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 
 	AddComponent(usernameField);
-	usernameField->Appearance.icon = IconUsername;
+	usernameField->Appearance.icon = IconContact;
 	usernameField->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	usernameField->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
+	usernameField->Appearance.Margin.Left -= 1;
 	AddComponent(passwordField);
-	passwordField->Appearance.icon = IconPassword;
+	passwordField->Appearance.icon = IconDialpad;
 	passwordField->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	passwordField->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
+	passwordField->Appearance.Margin.Left -= 1;
 	passwordField->SetHidden(true);
 }
 
@@ -131,9 +144,11 @@ LoginView::~LoginView() {
 	RemoveComponent(titleLabel);
 	RemoveComponent(loginButton);
 	RemoveComponent(cancelButton);
+	RemoveComponent(createAccountButton);
 	RemoveComponent(usernameField);
 	RemoveComponent(passwordField);
 	RemoveComponent(infoLabel);
+	RemoveComponent(createAccountLabel);
 	delete cancelButton;
 	delete loginButton;
 	delete titleLabel;

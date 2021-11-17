@@ -68,7 +68,7 @@ void Textbox::SetText(String newText)
 	if(masked)
 	{
 		String maskedText = newText;
-		std::fill(maskedText.begin(), maskedText.end(), 0xE00D);
+		std::fill(maskedText.begin(), maskedText.end(), 0x2022);
 		Label::SetText(maskedText);
 	}
 	else
@@ -166,7 +166,7 @@ void Textbox::cutSelection()
 	if(masked)
 	{
 		String maskedText = backingText;
-		std::fill(maskedText.begin(), maskedText.end(), 0xE00D);
+		std::fill(maskedText.begin(), maskedText.end(), 0x2022);
 		Label::SetText(maskedText);
 	}
 	else
@@ -231,7 +231,7 @@ void Textbox::pasteIntoSelection()
 	if(masked)
 	{
 		String maskedText = backingText;
-		std::fill(maskedText.begin(), maskedText.end(), 0xE00D);
+		std::fill(maskedText.begin(), maskedText.end(), 0x2022);
 		Label::SetText(maskedText);
 	}
 	else
@@ -451,7 +451,7 @@ void Textbox::AfterTextChange(bool changed)
 		if (masked)
 		{
 			String maskedText = backingText;
-			std::fill(maskedText.begin(), maskedText.end(), 0xE00D);
+			std::fill(maskedText.begin(), maskedText.end(), 0x2022);
 			Label::SetText(maskedText);
 		}
 		else
@@ -619,6 +619,7 @@ void Textbox::Draw(const Point& screenPos)
 	{
 		if(border) g->drawrect(screenPos.X, screenPos.Y, Size.X, Size.Y, 255, 255, 255, 255);
 		g->draw_line(screenPos.X+textPosition.X+cursorPositionX, screenPos.Y-2+textPosition.Y+cursorPositionY, screenPos.X+textPosition.X+cursorPositionX, screenPos.Y+9+textPosition.Y+cursorPositionY, 255, 255, 255, 255);
+		g->draw_line(screenPos.X, screenPos.Y+Size.Y-1, screenPos.X+Size.X-1, screenPos.Y+Size.Y-1, 0, 192, 255, 255);
 	}
 	else
 	{

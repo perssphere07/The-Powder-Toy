@@ -12,4 +12,6 @@ namespace style {
 
 	ui::Colour Colour::ActiveBackground = ui::Colour(50, 50, 50);
 	ui::Colour Colour::InactiveBackground = ui::Colour(0, 0, 0);
+
+	ui::Colour Colour::Hyperlink = ui::Colour(0, 128, 255);
 }

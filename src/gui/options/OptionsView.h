@@ -39,6 +39,7 @@ class OptionsView: public ui::Window
 	ui::Checkbox * mouseClickRequired;
 	ui::Checkbox * includePressure;
 	ui::Checkbox * perfectCirclePressure;
+	ui::Checkbox * celsiusUnit;
 	ui::ScrollPanel * scrollPanel;
 	bool initializedAirTempPreview = false;
 	void UpdateAmbientAirTempPreview(float airTemp, bool isValid);

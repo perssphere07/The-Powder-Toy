@@ -35,6 +35,7 @@ public:
 	void SetMouseClickrequired(bool mouseClickRequired);
 	void SetIncludePressure(bool includePressure);
 	void SetPerfectCircle(bool perfectCircle);
+	void SetCelsiusUnit(bool celsiusUnit);
 	void SetMomentumScroll(bool momentumScroll);
 	
 	void Exit();

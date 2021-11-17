@@ -240,6 +240,18 @@ void OptionsModel::SetPerfectCircle(bool perfectCircle)
 	notifySettingsChanged();
 }
 
+bool OptionsModel::GetCelsiusUnit()
+{
+	return gModel->GetCelsiusUnit();
+}
+
+void OptionsModel::SetCelsiusUnit(bool celsiusUnit)
+{
+	Client::Ref().SetPref("CelsiusUnit", celsiusUnit);
+	gModel->SetCelsiusUnit(celsiusUnit);
+	notifySettingsChanged();
+}
+
 bool OptionsModel::GetMomentumScroll()
 {
 	return ui::Engine::Ref().MomentumScroll;

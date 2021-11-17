@@ -27,6 +27,7 @@ private:
 	ui::Button * favButton;
 	ui::Button * nextButton;
 	ui::Button * previousButton;
+	ui::Button * homeButton;
 	ui::Label * errorLabel;
 	ui::Textbox * searchField;
 	ui::Textbox * pageTextbox;

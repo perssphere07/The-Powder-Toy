@@ -41,12 +41,3 @@ public:
 	bool GetToggle() override;
 	void perform() override;
 };
-
-class ConsoleShowOption: public QuickOption
-{
-	GameController * c;
-public:
-	ConsoleShowOption(GameModel * m, GameController * c_);
-	bool GetToggle() override;
-	void perform() override;
-};

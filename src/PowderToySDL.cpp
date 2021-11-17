@@ -277,7 +277,7 @@ bool RecreateWindow()
 		SDL_DestroyWindow(sdl_window);
 	}
 
-	sdl_window = SDL_CreateWindow("The Powder Toy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOWW * scale, WINDOWH * scale,
+	sdl_window = SDL_CreateWindow("The Powder Toy*", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOWW * scale, WINDOWH * scale,
 	                              flags);
 	sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
 	if (!sdl_renderer)

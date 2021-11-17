@@ -81,6 +81,7 @@ private:
 	bool mouseClickRequired;
 	bool includePressure;
 	bool perfectCircle = true;
+	bool celsiusUnit = true;
 
 	size_t activeColourPreset;
 	std::vector<ui::Colour> colourPresets;
@@ -229,9 +230,14 @@ public:
 	bool GetIncludePressure();
 	void SetIncludePressure(bool includePressure);
 	void SetPerfectCircle(bool perfectCircle);
+	void SetCelsiusUnit(bool celsiusUnit);
 	inline bool GetPerfectCircle() const
 	{
 		return perfectCircle;
+	}
+	inline bool GetCelsiusUnit() const
+	{
+		return celsiusUnit;
 	}
 
 	std::vector<Notification*> GetNotifications();

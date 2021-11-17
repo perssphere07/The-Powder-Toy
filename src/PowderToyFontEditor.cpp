@@ -175,7 +175,7 @@ int SDLOpen()
 
 void SDLSetScreen(int scale_, bool resizable_, bool fullscreen_, bool altFullscreen_, bool forceIntegerScaling_)
 {
-//	bool changingScale = scale != scale_;
+	// bool changingScale = scale != scale_;
 	bool changingFullscreen = fullscreen_ != fullscreen || (altFullscreen_ != altFullscreen && fullscreen);
 	bool changingResizable = resizable != resizable_;
 	scale = scale_;
@@ -185,7 +185,7 @@ void SDLSetScreen(int scale_, bool resizable_, bool fullscreen_, bool altFullscr
 	forceIntegerScaling = forceIntegerScaling_;
 	// Recreate the window when toggling fullscreen, due to occasional issues
 	// Also recreate it when enabling resizable windows, to fix bugs on windows,
-	//  see https://github.com/jacob1/The-Powder-Toy/issues/24
+	// see https://github.com/jacob1/The-Powder-Toy/issues/24
 	if (changingFullscreen || (changingResizable && resizable && !fullscreen))
 	{
 		RecreateWindow();
@@ -222,7 +222,7 @@ void RecreateWindow()
 		SDL_DestroyWindow(sdl_window);
 	}
 
-	sdl_window = SDL_CreateWindow("The Powder Toy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOWW * scale, WINDOWH * scale,
+	sdl_window = SDL_CreateWindow("The Powder Toy Font Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOWW * scale, WINDOWH * scale,
 	                              flags);
 	sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
 	SDL_RenderSetLogicalSize(sdl_renderer, WINDOWW, WINDOWH);
