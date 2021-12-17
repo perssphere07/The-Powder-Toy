@@ -303,6 +303,17 @@ OptionsView::OptionsView():
 	scrollPanel->AddChild(perfectCirclePressure);
 
 	currentY+=20;
+	celsiusUnit = new ui::Checkbox(ui::Point(8, currentY), ui::Point(1, 16), "Use Celsius unit", "");
+	autowidth(celsiusUnit);
+	celsiusUnit->SetActionCallback({ [this] { c->SetCelsiusUnit(celsiusUnit->GetChecked()); } });
+	tempLabel = new ui::Label(ui::Point(celsiusUnit->Position.X+Graphics::textwidth(celsiusUnit->GetText())+20, currentY), ui::Point(1, 16), "\bg- Use Celsius unit in temparature");
+	autowidth(tempLabel);
+	tempLabel->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	tempLabel->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
+	scrollPanel->AddChild(tempLabel);
+	scrollPanel->AddChild(celsiusUnit);
+
+	currentY+=20;
 	decoSpace = new ui::DropDown(ui::Point(8, currentY), ui::Point(60, 16));
 	decoSpace->SetActionCallback({ [this] { c->SetDecoSpace(decoSpace->GetOption().second); } });
 	scrollPanel->AddChild(decoSpace);
@@ -444,6 +455,7 @@ void OptionsView::NotifySettingsChanged(OptionsModel * sender)
 	mouseClickRequired->SetChecked(sender->GetMouseClickRequired());
 	includePressure->SetChecked(sender->GetIncludePressure());
 	perfectCirclePressure->SetChecked(sender->GetPerfectCircle());
+	celsiusUnit->SetChecked(sender->GetCelsiusUnit());
 	momentumScroll->SetChecked(sender->GetMomentumScroll());
 }
 

@@ -71,14 +71,14 @@ PreviewView::PreviewView():
 	openButton = new ui::Button(ui::Point(0, Size.Y-19), ui::Point(51, 19), "Open");
 	openButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	openButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	openButton->SetIcon(IconOpen);
+	openButton->SetIcon(IconDownload);
 	openButton->SetActionCallback({ [this] { c->DoOpen(); } });
 	AddComponent(openButton);
 
 	browserOpenButton = new ui::Button(ui::Point((XRES/2)-107, Size.Y-19), ui::Point(108, 19), "Open in browser");
 	browserOpenButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	browserOpenButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	browserOpenButton->SetIcon(IconOpen);
+	browserOpenButton->SetIcon(IconGlobe);
 	browserOpenButton->SetActionCallback({ [this] { c->OpenInBrowser(); } });
 	AddComponent(browserOpenButton);
 

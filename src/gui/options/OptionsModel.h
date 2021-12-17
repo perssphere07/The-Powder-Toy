@@ -54,6 +54,8 @@ public:
 	void SetIncludePressure(bool includePressure);
 	bool GetPerfectCircle();
 	void SetPerfectCircle(bool perfectCircle);
+	bool GetCelsiusUnit();
+	void SetCelsiusUnit(bool celsiusUnit);
 	bool GetMomentumScroll();
 	void SetMomentumScroll(bool momentumScroll);
 	virtual ~OptionsModel();

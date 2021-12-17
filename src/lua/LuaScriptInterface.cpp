@@ -60,6 +60,8 @@ extern "C"
 #include <dirent.h>
 }
 #include "eventcompat.lua.h"
+#include "scrptmgr.lua.h"
+#include "multimgr.lua.h"
 
 // idea from mniip, makes things much simpler
 #define SETCONST(L, NAME)\
@@ -373,6 +375,14 @@ tpt.partsdata = nil");
 	if (luaL_loadbuffer(l, (const char *)eventcompat_lua, eventcompat_lua_size, "@[built-in eventcompat.lua]") || lua_pcall(l, 0, 0, 0))
 	{
 		throw std::runtime_error(ByteString("failed to load built-in eventcompat: ") + lua_tostring(l, -1));
+	}
+	if (luaL_loadbuffer(l, (const char *)scrptmgr_lua, scrptmgr_lua_size, "@[built-in scrptmgr.lua]") || lua_pcall(l, 0, 0, 0))
+	{
+		//Ignore;
+	}
+	if (luaL_loadbuffer(l, (const char *)multimgr_lua, multimgr_lua_size, "@[built-in multimgr.lua]") || lua_pcall(l, 0, 0, 0))
+	{
+		//Ignore;
 	}
 }
 
@@ -4390,11 +4400,9 @@ LuaScriptInterface::~LuaScriptInterface() {
 	delete legacy;
 }
 
-#ifndef NOHTTP
 void LuaScriptInterface::initSocketAPI()
 {
 	LuaTCPSocket::Open(l);
 }
-#endif
 
 #endif

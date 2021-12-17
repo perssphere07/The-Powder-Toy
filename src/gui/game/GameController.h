@@ -181,6 +181,7 @@ public:
 	void NotifyNewNotification(Client * sender, std::pair<String, ByteString> notification) override;
 	void RunUpdater();
 	bool GetMouseClickRequired();
+	bool GetCelsiusUnit();
 
 	void RemoveCustomGOLType(const ByteString &identifier);
 };

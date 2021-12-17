@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <deque>
+
 #include "common/String.h"
 #include "gui/interface/Window.h"
 #include "simulation/Sample.h"
@@ -87,18 +88,34 @@ private:
 	std::vector<ui::Component*> notificationComponents;
 	std::deque<std::pair<String, int> > logEntries;
 	ui::Button * scrollBar;
+	ui::Button * appButton;
+	ui::Button * ribbonBar;
+	ui::Button * clearSimulationButton;
+	ui::Button * openSimulationButton;
+	ui::Button * saveSimulationButton;
+	ui::Button * undoButton;
+	ui::Button * redoButton;
+	ui::Button * copyButton;
+	ui::Button * cutButton;
+	ui::Button * pasteButton;
+	ui::Button * createStampButton;
+	ui::Button * useStampButton;
+	ui::Button * stampBrowserButton;
+	ui::Button * findButton;
+	ui::Button * debugButton;
+	SplitButton * loginButton;
 	ui::Button * searchButton;
 	ui::Button * reloadButton;
-	SplitButton * saveSimulationButton;
+	SplitButton * saveUploadSimulationButton;
 	bool saveSimulationButtonEnabled;
 	bool saveReuploadAllowed;
 	ui::Button * downVoteButton;
 	ui::Button * upVoteButton;
 	ui::Button * tagSimulationButton;
-	ui::Button * clearSimButton;
-	SplitButton * loginButton;
+	ui::Button * showConsoleButton;
 	ui::Button * simulationOptionButton;
 	ui::Button * displayModeButton;
+	ui::Button * frameButton;
 	ui::Button * pauseButton;
 
 	ui::Button * colourPicker;

@@ -682,7 +682,7 @@ VideoBuffer * Renderer::WallIcon(int wallID, int width, int height)
 				newTexture->SetPixel(i, j, PIXR(pc), PIXG(pc), PIXB(pc), 255);
 			}
 		}
-		newTexture->AddCharacter(4, 2, 0xE00D, 255, 255, 255, 255);
+		newTexture->AddCharacter(4, 2, 0x2022, 255, 255, 255, 255);
 		for (i=width/3; i<width; i++)
 		{
 			newTexture->SetPixel(i, 7+(int)(3.9f*cos(i*0.3f)), 255, 255, 255, 255);
@@ -811,7 +811,7 @@ void Renderer::DrawWalls()
 						// there is no velocity here, draw a streamline and continue
 						if (!xVel && !yVel)
 						{
-							drawtext(x*CELL, y*CELL-2, 0xE00D, 255, 255, 255, 128);
+							drawtext(x*CELL, y*CELL-2, 0x2022, 255, 255, 255, 128);
 							addpixel(oldX, oldY, 255, 255, 255, 255);
 							continue;
 						}
@@ -842,7 +842,7 @@ void Renderer::DrawWalls()
 							xf += xVel;
 							yf += yVel;
 						}
-						drawtext(x*CELL, y*CELL-2, 0xE00D, 255, 255, 255, 128);
+						drawtext(x*CELL, y*CELL-2, 0x2022, 255, 255, 255, 128);
 					}
 					break;
 				case 1:

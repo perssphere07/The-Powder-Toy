@@ -17,7 +17,9 @@ class LoginView: public ui::Window
 	LoginController * c;
 	ui::Button * loginButton;
 	ui::Button * cancelButton;
+	ui::Button * createAccountButton;
 	ui::Label * titleLabel;
+	ui::Label * createAccountLabel;
 	ui::Label * infoLabel;
 	ui::Textbox * usernameField;
 	ui::Textbox * passwordField;

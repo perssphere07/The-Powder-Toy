@@ -738,191 +738,225 @@ void Graphics::draw_icon(int x, int y, Icon icon, unsigned char alpha, bool inve
 	y--;
 	switch(icon)
 	{
-	case IconOpen:
+	case IconConsole:
+		if(invert)
+			drawchar(x, y, 0xE000, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE000, 255, 255, 255, alpha);
+		break;
+	case IconStamp:
 		if(invert)
 			drawchar(x, y, 0xE001, 0, 0, 0, alpha);
 		else
 			drawchar(x, y, 0xE001, 255, 255, 255, alpha);
 		break;
-	case IconReload:
-		if(invert)
-			drawchar(x, y, 0xE011, 0, 0, 0, alpha);
-		else
-			drawchar(x, y, 0xE011, 255, 255, 255, alpha);
-		break;
-	case IconSave:
+	case IconUseStamp:
 		if(invert)
 			drawchar(x, y, 0xE002, 0, 0, 0, alpha);
 		else
 			drawchar(x, y, 0xE002, 255, 255, 255, alpha);
 		break;
-	case IconVoteUp:
+	case IconAdd:
 		if(invert)
-		{
-			drawchar(x-11, y+1, 0xE04B, 0, 100, 0, alpha);
-			drawtext(x+2, y+1, "Vote", 0, 100, 0, alpha);
-		}
+			drawchar(x, y, 0xE710, 0, 0, 0, alpha);
 		else
-		{
-			drawchar(x-11, y+1, 0xE04B, 0, 187, 18, alpha);
-			drawtext(x+2, y+1, "Vote", 0, 187, 18, alpha);
-		}
-		break;
-	case IconVoteDown:
-		if(invert)
-			drawchar(x, y, 0xE04A, 100, 10, 0, alpha);
-		else
-			drawchar(x, y, 0xE04A, 187, 40, 0, alpha);
-		break;
-	case IconTag:
-		if(invert)
-			drawchar(x, y, 0xE003, 0, 0, 0, alpha);
-		else
-			drawchar(x, y, 0xE003, 255, 255, 255, alpha);
-		break;
-	case IconNew:
-		if(invert)
-			drawchar(x, y, 0xE012, 0, 0, 0, alpha);
-		else
-			drawchar(x, y, 0xE012, 255, 255, 255, alpha);
-		break;
-	case IconLogin:
-		if(invert)
-			drawchar(x, y+1, 0xE004, 0, 0, 0, alpha);
-		else
-			drawchar(x, y+1, 0xE004, 255, 255, 255, alpha);
+			drawchar(x, y, 0xE710, 255, 255, 255, alpha);
 		break;
 	case IconSimulationSettings:
 		if(invert)
-			drawchar(x, y+1, 0xE04F, 0, 0, 0, alpha);
+			drawchar(x, y, 0xE713, 0, 0, 0, alpha);
 		else
-			drawchar(x, y+1, 0xE04F, 255, 255, 255, alpha);
+			drawchar(x, y, 0xE713, 255, 255, 255, alpha);
 		break;
-	case IconRenderSettings:
+	case IconSearch:
 		if(invert)
-		{
-			drawchar(x, y+1, 0xE058, 255, 0, 0, alpha);
-			drawchar(x, y+1, 0xE059, 0, 255, 0, alpha);
-			drawchar(x, y+1, 0xE05A, 0, 0, 255, alpha);
-		}
+			drawchar(x, y+2, 0xE721, 0, 0, 0, alpha);
 		else
-		{
-			addchar(x, y+1, 0xE058, 255, 0, 0, alpha);
-			addchar(x, y+1, 0xE059, 0, 255, 0, alpha);
-			addchar(x, y+1, 0xE05A, 0, 0, 255, alpha);
-		}
+			drawchar(x, y+2, 0xE721, 255, 255, 255, alpha);
 		break;
-	case IconPause:
-		if(invert)
-			drawchar(x, y, 0xE010, 0, 0, 0, alpha);
+	case IconFavoriteList:
+		if (invert)
+			drawchar(x, y+2, 0xE728, 0, 128, 255, alpha);
 		else
-			drawchar(x, y, 0xE010, 255, 255, 255, alpha);
+			drawchar(x, y+2, 0xE728, 0, 192, 255, alpha);
+		break;
+	case IconReload:
+		if(invert)
+			drawchar(x, y, 0xE72C, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE72C, 255, 255, 255, alpha);
 		break;
 	case IconFavourite:
 		if(invert)
-			drawchar(x, y, 0xE04C, 100, 80, 32, alpha);
+			drawchar(x, y+2, 0xE734, 0, 128, 255, alpha);
 		else
-			drawchar(x, y, 0xE04C, 192, 160, 64, alpha);
+			drawchar(x, y+2, 0xE734, 0, 192, 255, alpha);
+		break;
+	case IconApp:
+		if(invert)
+			drawchar(x, y+2, 0xE74C, 0, 0, 0, alpha);
+		else
+			drawchar(x, y+2, 0xE74C, 255, 255, 255, alpha);
+		break;
+	case IconDelete:
+		if(invert)
+			drawchar(x, y, 0xE74D, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE74D, 255, 255, 255, alpha);
+		break;
+	case IconSave:
+		if(invert)
+			drawchar(x, y, 0xE74E, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE74E, 255, 255, 255, alpha);
+		break;
+	case IconDialpad:
+		drawchar(x, y+2, 0xE75F, 255, 255, 255, alpha);
+		break;
+	case IconPause:
+		if(invert)
+			drawchar(x, y, 0xE768, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE769, 255, 255, 255, alpha);
+		break;
+	case IconRenderSettings:
+		if(invert)	
+			drawchar(x, y, 0xE771, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE771, 255, 255, 255, alpha);
+		break;
+	case IconGlobe:
+		if(invert)
+			drawchar(x, y + 2, 0xE774, 0, 0, 0, alpha);
+		else
+			drawchar(x, y + 2, 0xE774, 255, 255, 255, alpha);
+		break;
+	case IconContact:
+		if (invert)
+			drawchar(x, y+2, 0xE77B, 0, 0, 0, alpha);
+		else
+			drawchar(x, y+2, 0xE77B, 255, 255, 255, alpha);
+		break;
+	case IconPaste:
+		if(invert)
+			drawchar(x, y, 0xE77F, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE77F, 255, 255, 255, alpha);
 		break;
 	case IconReport:
 		if(invert)
-			drawchar(x, y, 0xE063, 140, 140, 0, alpha);
+			drawchar(x, y+2, 0xE789, 140, 140, 0, alpha);
 		else
-			drawchar(x, y, 0xE063, 255, 255, 0, alpha);
+			drawchar(x, y+2, 0xE789, 255, 255, 0, alpha);
 		break;
-	case IconUsername:
+	case IconRedo:
 		if(invert)
-		{
-			drawchar(x, y, 0xE00B, 32, 64, 128, alpha);
-			drawchar(x, y, 0xE00A, 0, 0, 0, alpha);
-		}
+			drawchar(x, y, 0xE7A6, 0, 0, 0, alpha);
 		else
-		{
-			drawchar(x, y, 0xE00B, 32, 64, 128, alpha);
-			drawchar(x, y, 0xE00A, 255, 255, 255, alpha);
-		}
+			drawchar(x, y, 0xE7A6, 255, 255, 255, alpha);
 		break;
-	case IconPassword:
+	case IconUndo:
 		if(invert)
-		{
-			drawchar(x, y, 0xE00C, 160, 144, 32, alpha);
-			drawchar(x, y, 0xE004, 0, 0, 0, alpha);
-		}
+			drawchar(x, y, 0xE7A7, 0, 0, 0, alpha);
 		else
-		{
-			drawchar(x, y, 0xE00C, 160, 144, 32, alpha);
-			drawchar(x, y, 0xE004, 255, 255, 255, alpha);
-		}
+			drawchar(x, y, 0xE7A7, 255, 255, 255, alpha);
 		break;
+	case IconNew:
+		if(invert)
+			drawchar(x, y, 0xE7C3, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE7C3, 255, 255, 255, alpha);
+		break;
+	case IconHome:
+		if(invert)
+			drawchar(x, y+2, 0xE80F, 0, 0, 0, alpha);
+		else
+			drawchar(x, y+2, 0xE80F, 255, 255, 255, alpha);
+		break;
+	case IconOpen:
+		if(invert)
+			drawchar(x, y, 0xE838, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE838, 255, 255, 255, alpha);
+		break;
+	case IconDownload:
+		if(invert)
+			drawchar(x, y+2, 0xE896, 0, 0, 0, alpha);
+		else
+			drawchar(x, y+2, 0xE896, 255, 255, 255, alpha);
+		break;
+	case IconUpload:
+		if(invert)
+			drawchar(x, y+2, 0xE898, 0, 0, 0, alpha);
+		else
+			drawchar(x, y+2, 0xE898, 255, 255, 255, alpha);
+		break;
+	case IconViewAll:
+		if(invert)
+			drawchar(x, y+2, 0xE8A9, 0, 0, 0, alpha);
+		else
+			drawchar(x, y+2, 0xE8A9, 255, 255, 255, alpha);
+		break;
+	case IconCut:
+		if(invert)
+			drawchar(x, y, 0xE8C6, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE8C6, 255, 255, 255, alpha);
+		break;
+	case IconCopy:
+		if(invert)
+			drawchar(x, y, 0xE8C8, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xE8C8, 255, 255, 255, alpha);
+		break;
+	case IconSort:
+		if(invert)
+			drawchar(x, y+2, 0xE8CB, 0, 0, 0, alpha);
+		else
+			drawchar(x, y+2, 0xE8CB, 255, 255, 255, alpha);
+		break;
+	case IconVoteDown:
+		if(invert)
+			drawchar(x, y, 0xE8E0, 100, 10, 0, alpha);
+		else
+			drawchar(x, y, 0xE8E0, 187, 40, 0, alpha);
+		break;
+	case IconVoteUp:
+		if(invert)
+			drawchar(x, y, 0xE8E1, 0, 100, 0, alpha);
+		else
+			drawchar(x, y, 0xE8E1, 0, 187, 18, alpha);
+		break;
+	case IconTag:
+		if(invert)
+			drawchar(x, y+2, 0xE8EC, 0, 0, 0, alpha);
+		else
+			drawchar(x, y+2, 0xE8EC, 255, 255, 255, alpha);
+		break;
+	case IconFastForward:
+		if(invert)
+			drawchar(x, y, 0xEB9D, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xEB9D, 255, 255, 255, alpha);
+		break;
+	case IconDebug:
+		if(invert)
+			drawchar(x, y, 0xEC7A, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xEC7A, 255, 255, 255, alpha);
+		break;
+	case IconClipboard:
+		if(invert)
+			drawchar(x, y, 0xF0E3, 0, 0, 0, alpha);
+		else
+			drawchar(x, y, 0xF0E3, 255, 255, 255, alpha);
+		break;
+
 	case IconClose:
 		if(invert)
 			drawchar(x, y, 0xE02A, 20, 20, 20, alpha);
 		else
 			drawchar(x, y, 0xE02A, 230, 230, 230, alpha);
-		break;
-	case IconVoteSort:
-		if (invert)
-		{
-			drawchar(x, y, 0xE029, 44, 48, 32, alpha);
-			drawchar(x, y, 0xE028, 32, 44, 32, alpha);
-			drawchar(x, y, 0xE027, 128, 128, 128, alpha);
-		}
-		else
-		{
-			drawchar(x, y, 0xE029, 144, 48, 32, alpha);
-			drawchar(x, y, 0xE028, 32, 144, 32, alpha);
-			drawchar(x, y, 0xE027, 255, 255, 255, alpha);
-		}
-		break;
-	case IconDateSort:
-		if (invert)
-		{
-			drawchar(x, y, 0xE026, 32, 32, 32, alpha);
-		}
-		else
-		{
-			drawchar(x, y, 0xE026, 255, 255, 255, alpha);
-		}
-		break;
-	case IconMyOwn:
-		if (invert)
-		{
-			drawchar(x, y, 0xE014, 192, 160, 64, alpha);
-			drawchar(x, y, 0xE013, 32, 32, 32, alpha);
-		}
-		else
-		{
-			drawchar(x, y, 0xE014, 192, 160, 64, alpha);
-			drawchar(x, y, 0xE013, 255, 255, 255, alpha);
-		}
-		break;
-	case IconSearch:
-		drawchar(x, y, 0xE00E, 30, 30, 180, alpha);
-		drawchar(x, y, 0xE00F, 255, 255, 255, alpha);
-		break;
-	case IconDelete:
-		if(invert)
-		{
-			drawchar(x, y, 0xE006, 159, 47, 31, alpha);
-			drawchar(x, y, 0xE005, 0, 0, 0, alpha);
-		}
-		else
-		{
-			drawchar(x, y, 0xE006, 159, 47, 31, alpha);
-			drawchar(x, y, 0xE005, 255, 255, 255, alpha);
-		}
-		break;
-	case IconAdd:
-		if(invert)
-		{
-			drawchar(x, y, 0xE006, 32, 144, 32, alpha);
-			drawchar(x, y, 0xE009, 0, 0, 0, alpha);
-		}
-		else
-		{
-			drawchar(x, y, 0xE006, 32, 144, 32, alpha);
-			drawchar(x, y, 0xE009, 255, 255, 255, alpha);
-		}
 		break;
 	case IconVelocity:
 		drawchar(x+1, y, 0xE018, 128, 160, 255, alpha);
@@ -970,24 +1004,24 @@ void Graphics::draw_icon(int x, int y, Icon icon, unsigned char alpha, bool inve
 		break;
 	case IconLife:
 		if(invert)
-			drawchar(x, y+1, 0xE060, 0, 0, 0, alpha);
+			drawchar(x, y+1, 0xE059, 0, 0, 0, alpha);
 		else
-			drawchar(x, y+1, 0xE060, 255, 255, 255, alpha);
+			drawchar(x, y+1, 0xE059, 255, 255, 255, alpha);
 		break;
 	case IconEffect:
-		drawchar(x+1, y, 0xE061, 255, 255, 160, alpha);
+		drawchar(x+1, y, 0xE05a, 255, 255, 160, alpha);
 		break;
 	case IconGlow:
-		drawchar(x+1, y, 0xE05F, 200, 255, 255, alpha);
+		drawchar(x+1, y, 0xE058, 200, 255, 255, alpha);
 		break;
 	case IconWarp:
-		drawchar(x+1, y, 0xE05E, 255, 255, 255, alpha);
+		drawchar(x+1, y, 0xE057, 255, 255, 255, alpha);
 		break;
 	case IconBasic:
 		if(invert)
-			drawchar(x+1, y+1, 0xE05B, 50, 50, 0, alpha);
+			drawchar(x+1, y+1, 0xE056, 50, 50, 0, alpha);
 		else
-			drawchar(x+1, y+1, 0xE05B, 255, 255, 200, alpha);
+			drawchar(x+1, y+1, 0xE056, 255, 255, 200, alpha);
 		break;
 	case IconAltAir:
 		if(invert) {
