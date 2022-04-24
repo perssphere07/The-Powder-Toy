@@ -554,11 +554,11 @@ void GameView::NotifyQuickOptionsChanged(GameModel * sender)
 		delete quickOptionButtons[i];
 	}
 
-	int currentY = 1;
+	int currentX = WINDOWW - 90;
 	std::vector<QuickOption*> optionList = sender->GetQuickOptions();
 	for(auto *option : optionList)
 	{
-		ui::Button * tempButton = new ui::Button(ui::Point(WINDOWW-18, currentY), ui::Point(17, 17), option->GetIcon(), option->GetDescription());
+		ui::Button * tempButton = new ui::Button(ui::Point(currentX, WINDOWH-54), ui::Point(17, 17), option->GetIcon(), option->GetDescription());
 		tempButton->SetTogglable(true);
 		tempButton->SetActionCallback({ [option] {
 			option->Perform();
@@ -567,13 +567,13 @@ void GameView::NotifyQuickOptionsChanged(GameModel * sender)
 		AddComponent(tempButton);
 
 		quickOptionButtons.push_back(tempButton);
-		currentY += 18;
+		currentX += 18;
 	}
 }
 
 void GameView::NotifyMenuListChanged(GameModel * sender)
 {
-	int currentY = WINDOWH-54;//-(sender->GetMenuList().size()*16);
+	int currentX = 1; // -(sender->GetMenuList().size()*16);
 	for (size_t i = 0; i < menuButtons.size(); i++)
 	{
 		RemoveComponent(menuButtons[i]);
@@ -587,7 +587,7 @@ void GameView::NotifyMenuListChanged(GameModel * sender)
 	}
 	toolButtons.clear();
 	std::vector<Menu*> menuList = sender->GetMenuList();
-	for (int i = (int)menuList.size()-1; i >= 0; i--)
+	for (int i = 0; i < (int)menuList.size(); i++)
 	{
 		if (menuList[i]->GetVisible())
 		{
@@ -596,7 +596,7 @@ void GameView::NotifyMenuListChanged(GameModel * sender)
 			String description = menuList[i]->GetDescription();
 			if (i == SC_FAVORITES && !Favorite::Ref().AnyFavorites())
 				description += " (Use ctrl+shift+click to toggle the favorite status of an element)";
-			auto *tempButton = new MenuButton(ui::Point(WINDOWW-18, currentY), ui::Point(17, 17), tempString, description);
+			auto *tempButton = new MenuButton(ui::Point(currentX, WINDOWH-54), ui::Point(17, 17), tempString, description);
 			tempButton->Appearance.Margin = ui::Border(2, 2, 2, 2);
 			tempButton->menuID = i;
 			tempButton->needsClick = i == SC_DECO;
@@ -615,7 +615,7 @@ void GameView::NotifyMenuListChanged(GameModel * sender)
 					mouseEnterCallback();
 			};
 			tempButton->SetActionCallback({ actionCallback, nullptr, mouseEnterCallback });
-			currentY-=18;
+			currentX+=18;
 			AddComponent(tempButton);
 			menuButtons.push_back(tempButton);
 		}
@@ -754,7 +754,7 @@ void GameView::NotifyToolListChanged(GameModel * sender)
 			tempButton = new ToolButton(ui::Point(currentX, YRES+1), ui::Point(30, 18), tool->GetName(), tool->GetIdentifier(), tool->GetDescription());
 
 		//currentY -= 17;
-		currentX -= 31;
+		currentX += 31;
 		tempButton->tool = tool;
 		tempButton->SetActionCallback({ [this, tempButton] {
 			auto *tool = tempButton->tool;
@@ -1101,35 +1101,41 @@ void GameView::updateToolButtonScroll()
 	if(toolButtons.size())
 	{
 		int x = currentMouse.X, y = currentMouse.Y;
-		int newInitialX = WINDOWW-56;
+		int newInitialX = 5;
 		int totalWidth = (toolButtons[0]->Size.X+1)*toolButtons.size();
-		int scrollSize = (int)(((float)(XRES-BARSIZE))/((float)totalWidth) * ((float)XRES-BARSIZE));
-		if (scrollSize>XRES-1)
-			scrollSize = XRES-1;
+		int scrollSize = (int)((XRES-2)*(XRES-2)/(float)totalWidth);
+
+		if (scrollSize - 2 > XRES)
+			scrollSize = XRES - 2;
+
 		if(totalWidth > XRES-15)
 		{
 			int mouseX = x;
-			if(mouseX > XRES)
+
+			if (mouseX > XRES)
 				mouseX = XRES;
 			//if (mouseX < 15) //makes scrolling a little nicer at edges but apparently if you put hundreds of elements in a menu it makes the end not show ...
 			//	mouseX = 15;
 
-			scrollBar->Position.X = (int)(((float)mouseX/((float)XRES))*(float)(XRES-scrollSize));
+			scrollBar->Position.X = (int)(((float)mouseX/XRES)*(float)(XRES-scrollSize))+1;
 
-			float overflow = float(totalWidth-(XRES-BARSIZE)), mouseLocation = float(XRES-3)/float((XRES-2)-mouseX); //mouseLocation adjusted slightly in case you have 200 elements in one menu
+			float overflow = float(totalWidth-XRES+10), mouseLocation = XRES/float(XRES-mouseX); //mouseLocation adjusted slightly in case you have 200 elements in one menu
 
-			newInitialX += int(overflow/mouseLocation);
+			newInitialX += (int)(overflow / mouseLocation - overflow);
 		}
 		else
 		{
 			scrollBar->Position.X = 1;
 		}
-		scrollBar->Size.X=scrollSize;
+
+		scrollBar->Size.X = scrollSize;
+
 		int offsetDelta = toolButtons[0]->Position.X - newInitialX;
+
 		for(auto *button : toolButtons)
 		{
 			button->Position.X -= offsetDelta;
-			if (button->Position.X+button->Size.X <= 0 || (button->Position.X+button->Size.X) > XRES-2)
+			if (button->Position.X+button->Size.X <= 0 || (button->Position.X) >= XRES)
 				button->Visible = false;
 			else
 				button->Visible = true;
@@ -1457,6 +1463,8 @@ void GameView::OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl,
 	bool didKeyShortcut = true;
 	switch(scan)
 	{
+	case SDL_SCANCODE_RETURN:
+	case SDL_SCANCODE_SLASH:
 	case SDL_SCANCODE_GRAVE:
 		c->ShowConsole();
 		break;

@@ -117,8 +117,8 @@
 #define MENUSIZE 0
 #define BARSIZE 0
 #else
-#define MENUSIZE 60
-#define BARSIZE 19
+#define MENUSIZE 78
+#define BARSIZE 0
 #endif
 #define XRES	612
 #define YRES	384
@@ -127,7 +127,7 @@
 #define XCNTR   XRES/2
 #define YCNTR   YRES/2
 
-#define WINDOWW (XRES+BARSIZE)
+#define WINDOWW XRES // + BARSIZE
 #define WINDOWH (YRES+MENUSIZE)
 
 #define GRAV_DIFF
