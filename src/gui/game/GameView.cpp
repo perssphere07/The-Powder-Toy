@@ -1098,55 +1098,66 @@ int GameView::Record(bool record)
 
 void GameView::updateToolButtonScroll()
 {
-	if(toolButtons.size())
+	if (toolButtons.size())
 	{
-		int x = currentMouse.X, y = currentMouse.Y;
+		int x = currentMouse.X;
+		int y = currentMouse.Y;
+
+		int offsetDelta = 0;
+
 		int newInitialX = 5;
-		int totalWidth = (toolButtons[0]->Size.X+1)*toolButtons.size();
-		int scrollSize = (int)((XRES-2)*(XRES-2)/(float)totalWidth);
+		int totalWidth = (toolButtons[0]->Size.X + 1) * toolButtons.size();
+		int scrollSize = (int)((XRES - 2) * (XRES - 2) / (float)totalWidth);
 
-		if (scrollSize - 2 > XRES)
+		if (scrollSize > XRES + 2)
 			scrollSize = XRES - 2;
-
-		if(totalWidth > XRES-15)
-		{
+		
+		if (totalWidth > XRES - 15)
+		{			
 			int mouseX = x;
+
+			float overflow = 0;
+			float mouseLocation = 0;
 
 			if (mouseX > XRES)
 				mouseX = XRES;
-			//if (mouseX < 15) //makes scrolling a little nicer at edges but apparently if you put hundreds of elements in a menu it makes the end not show ...
-			//	mouseX = 15;
 
-			scrollBar->Position.X = (int)(((float)mouseX/XRES)*(float)(XRES-scrollSize))+1;
+			// if (mouseX < 15) // makes scrolling a little nicer at edges but apparently if you put hundreds of elements in a menu it makes the end not show ...
+			// 	mouseX = 15;
 
-			float overflow = float(totalWidth-XRES+10), mouseLocation = XRES/float(XRES-mouseX); //mouseLocation adjusted slightly in case you have 200 elements in one menu
+			scrollBar->Visible = true;
+
+			scrollBar->Position.X = (int)(((float)mouseX / (float)XRES) * (float)(XRES - scrollSize)) + 1;
+
+			overflow = (float)(totalWidth - (XRES + 10));
+			mouseLocation = XRES / (float)(XRES - mouseX); // mouseLocation adjusted slightly in case you have 200 elements in one menu
 
 			newInitialX += (int)(overflow / mouseLocation - overflow);
 		}
 		else
 		{
-			scrollBar->Position.X = 1;
+			scrollBar->Visible = false;
 		}
 
-		scrollBar->Size.X = scrollSize;
+		scrollBar->Size.X = scrollSize - 1;
 
-		int offsetDelta = toolButtons[0]->Position.X - newInitialX;
+		offsetDelta = toolButtons[0]->Position.X - newInitialX;
 
-		for(auto *button : toolButtons)
+		for (auto *button : toolButtons)
 		{
 			button->Position.X -= offsetDelta;
-			if (button->Position.X+button->Size.X <= 0 || (button->Position.X) >= XRES)
+			if (button->Position.X + button->Size.X <= 0 || (button->Position.X) >= XRES)
 				button->Visible = false;
 			else
 				button->Visible = true;
 		}
 
-		//Ensure that mouseLeave events are make their way to the buttons should they move from underneath the mouse pointer
-		if(toolButtons[0]->Position.Y < y && toolButtons[0]->Position.Y+toolButtons[0]->Size.Y > y)
+		// Ensure that mouseLeave events are make their way to the buttons should they move from underneath the mouse pointer
+		if (toolButtons[0]->Position.Y < y && toolButtons[0]->Position.Y + toolButtons[0]->Size.Y > y)
 		{
-			for(auto *button : toolButtons)
+			for (auto *button : toolButtons)
 			{
-				if(button->Position.X < x && button->Position.X+button->Size.X > x)
+				if (button->Position.X < x && button->Position.X + button->Size.X > x)
 					button->OnMouseEnter(x, y);
 				else
 					button->OnMouseLeave(x, y);
