@@ -225,7 +225,7 @@ GameView::GameView():
 	AddComponent(scrollBar);
 
 	appButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(150, 17), "The Powder Toy* 96.2", 
-		"The Xphere's mod 1.0, The Powder Toy* 96.2"
+		"The Xphere's Mod 1.1, The Powder Toy* 96.2"
 	);
 	appButton->SetIcon(IconApp);
 	appButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
@@ -459,7 +459,7 @@ GameView::GameView():
 	reloadButton->SetActionCallback({ [this] { c->ReloadSim(); }, [this] { c->OpenSavePreview(); } });
 	AddComponent(reloadButton);
 
-	tagSimulationButton = new ui::Button(ui::Point(currentX, Size.Y-18), ui::Point(304, 17), "[no tags set]", "Add simulation tags");
+	tagSimulationButton = new ui::Button(ui::Point(currentX, Size.Y-18), ui::Point(285, 17), "[no tags set]", "Add simulation tags");
 	tagSimulationButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	tagSimulationButton->SetIcon(IconTag);
 	tagSimulationButton->Appearance.Margin.Left -= 1;
@@ -1129,7 +1129,7 @@ void GameView::updateToolButtonScroll()
 
 			scrollBar->Position.X = (int)(((float)mouseX / (float)XRES) * (float)(XRES - scrollSize)) + 1;
 
-			overflow = (float)(totalWidth - (XRES + 10));
+			overflow = (float)(totalWidth - XRES + 10);
 			mouseLocation = XRES / (float)(XRES - mouseX); // mouseLocation adjusted slightly in case you have 200 elements in one menu
 
 			newInitialX += (int)(overflow / mouseLocation - overflow);

@@ -2,7 +2,7 @@
 #include "Config.h"
 
 const char *const introTextData =
-	"\blThe Xphere's mod " MTOS(MOD_MAJOR_VERSION) "." MTOS(MOD_MINOR_VERSION) ", The Powder Toy* " MTOS(SAVE_VERSION) "." MTOS(MINOR_VERSION) " - https://powdertoy.co.uk, irc.libera.chat #powder\n"
+	"\blThe Xphere's Mod " MTOS(MOD_MAJOR_VERSION) "." MTOS(MOD_MINOR_VERSION) ", The Powder Toy* " MTOS(SAVE_VERSION) "." MTOS(MINOR_VERSION) " - https://powdertoy.co.uk, irc.libera.chat #powder\n"
 	"                      \xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\n"
 	"\n"
 	"\bg[Ctrl] + [C]/[V]/[X] are Copy, Paste and cut respectively.\n"

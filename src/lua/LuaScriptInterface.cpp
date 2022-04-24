@@ -4510,9 +4510,11 @@ LuaScriptInterface::~LuaScriptInterface() {
 	delete legacy;
 }
 
+#ifndef NOHTTP
 void LuaScriptInterface::initSocketAPI()
 {
 	LuaTCPSocket::Open(l);
 }
+#endif
 
 #endif

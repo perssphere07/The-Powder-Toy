@@ -82,7 +82,7 @@ SearchView::SearchView():
 	ownButton->Appearance.Border = 0;
 	AddComponent(ownButton);
 
-	favButton = new ui::Button(ui::Point(16, 10), ui::Point(96, 17), "Favorites");
+	favButton = new ui::Button(ui::Point(16, 10), ui::Point(96, 17), "Favourites");
 	favButton->SetIcon(IconFavoriteList);
 	favButton->SetTogglable(true);
 	favButton->Appearance.Margin.Left+=1;
