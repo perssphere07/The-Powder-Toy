@@ -15,11 +15,7 @@
 #mesondefine IGNORE_UPDATES
 #mesondefine LIN
 #mesondefine AND
-#mesondefine NATIVE
 #mesondefine NO_INSTALL_CHECK
-#mesondefine OGLI
-#mesondefine OGLR
-#mesondefine PIX32OGL
 #mesondefine SNAPSHOT
 #mesondefine WIN
 #mesondefine MACOSX
@@ -33,6 +29,13 @@
 #mesondefine UPDATESERVER
 #mesondefine IDENT_PLATFORM
 #mesondefine IDENT
+#mesondefine ENFORCE_HTTPS
+#define APPNAME "@APPNAME@"
+#define APPCOMMENT "@APPCOMMENT@"
+#define APPEXE "@APPEXE@"
+#define APPID "@APPID@"
+#define APPDATA "@APPDATA@"
+#define APPVENDOR "@APPVENDOR@"
 
 #ifdef WIN
 # define PATH_SEP "\\"
@@ -86,7 +89,6 @@
 
 #define SCHEME "https://"
 #define STATICSCHEME "https://"
-#define ENFORCE_HTTPS
 
 #define LOCAL_SAVE_DIR "Saves"
 
@@ -153,5 +155,6 @@
 #define GLASS_DISP		0.07
 
 #define SDEUT
+#define R_TEMP 22
 
 #endif /* CONFIG_H */

@@ -41,6 +41,7 @@ class OptionsView: public ui::Window
 	ui::Checkbox * perfectCirclePressure;
 	ui::Checkbox * celsiusUnit;
 	ui::ScrollPanel * scrollPanel;
+	float customGravityX, customGravityY;
 	bool initializedAirTempPreview = false;
 	void UpdateAmbientAirTempPreview(float airTemp, bool isValid);
 	void UpdateAirTemp(String temp, bool isDefocus);

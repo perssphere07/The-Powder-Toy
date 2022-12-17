@@ -256,9 +256,9 @@ void GameController::PlaceSave(ui::Point position)
 void GameController::Install()
 {
 #if defined(MACOSX)
-	new InformationMessage("No installation necessary", "You don't need to install The Powder Toy on macOS.", false);
+	new InformationMessage("No installation necessary", "You don't need to install " APPNAME " on macOS.", false);
 #elif defined(WIN) || defined(LIN)
-	new ConfirmPrompt("Install The Powder Toy", "Do you wish to install The Powder Toy on this computer?\nThis allows you to open save files and saves directly from the website.", { [] {
+	new ConfirmPrompt("Install " APPNAME, "Do you wish to install " APPNAME " on this computer?\nThis allows you to open save files and saves directly from the website.", { [] {
 		if (Client::Ref().DoInstallation())
 		{
 			new InformationMessage("Success", "Installation completed.", false);
@@ -269,7 +269,7 @@ void GameController::Install()
 		}
 	} });
 #else
-	new ErrorMessage("Cannot install", "You cannot install The Powder Toy on this platform");
+	new ErrorMessage("Cannot install", "You cannot install " APPNAME " on this platform");
 #endif
 }
 
@@ -432,16 +432,12 @@ bool GameController::LoadClipboard()
 	if (!clip)
 		return false;
 	gameModel->SetPlaceSave(clip);
-	if (gameModel->GetPlaceSave() && gameModel->GetPlaceSave()->Collapsed())
-		gameModel->GetPlaceSave()->Expand();
 	return true;
 }
 
 void GameController::LoadStamp(GameSave *stamp)
 {
 	gameModel->SetPlaceSave(stamp);
-	if(gameModel->GetPlaceSave() && gameModel->GetPlaceSave()->Collapsed())
-		gameModel->GetPlaceSave()->Expand();
 }
 
 void GameController::TranslateSave(ui::Point point)
@@ -544,11 +540,11 @@ bool GameController::MouseDown(int x, int y, unsigned button)
 	return ret;
 }
 
-bool GameController::MouseUp(int x, int y, unsigned button, char type)
+bool GameController::MouseUp(int x, int y, unsigned button, MouseupReason reason)
 {
-	MouseUpEvent ev(x, y, button, type);
+	MouseUpEvent ev(x, y, button, reason);
 	bool ret = commandInterface->HandleEvent(LuaEvents::mouseup, &ev);
-	if (type)
+	if (reason != mouseUpNormal)
 		return ret;
 	if (ret && foundSignID != -1 && y<YRES && x<XRES && !gameView->GetPlacingSave())
 	{
@@ -764,7 +760,7 @@ void GameController::Tick()
 void GameController::Blur()
 {
 	// Tell lua that mouse is up (even if it really isn't)
-	MouseUp(0, 0, 0, 1);
+	MouseUp(0, 0, 0, mouseUpBlur);
 	BlurEvent ev;
 	commandInterface->HandleEvent(LuaEvents::blur, &ev);
 }
@@ -809,7 +805,7 @@ void GameController::ResetSpark()
 
 void GameController::SwitchGravity()
 {
-	gameModel->GetSimulation()->gravityMode = (gameModel->GetSimulation()->gravityMode+1)%3;
+	gameModel->GetSimulation()->gravityMode = (gameModel->GetSimulation()->gravityMode+1)%4;
 
 	switch (gameModel->GetSimulation()->gravityMode)
 	{
@@ -821,6 +817,9 @@ void GameController::SwitchGravity()
 		break;
 	case 2:
 		gameModel->SetInfoTip("Gravity: Radial");
+		break;
+	case 3:
+		gameModel->SetInfoTip("Gravity: Custom");
 		break;
 	}
 }
@@ -1204,10 +1203,11 @@ void GameController::OpenLocalSaveWindow(bool asCurrent)
 
 			gameModel->SetSaveFile(&tempSave, gameView->ShiftBehaviour());
 			Platform::MakeDirectory(LOCAL_SAVE_DIR);
-			std::vector<char> saveData = gameSave->Serialise();
+			auto [ fromNewerVersion, saveData ] = gameSave->Serialise();
+			(void)fromNewerVersion;
 			if (saveData.size() == 0)
 				new ErrorMessage("Error", "Unable to serialize game data.");
-			else if (Client::Ref().WriteFile(saveData, gameModel->GetSaveFile()->GetName()))
+			else if (!Platform::WriteFile(saveData, gameModel->GetSaveFile()->GetName()))
 				new ErrorMessage("Error", "Unable to write save file.");
 			else
 				gameModel->SetInfoTip("Saved Successfully");
@@ -1541,6 +1541,11 @@ String GameController::WallName(int type)
 		return gameModel->GetSimulation()->wtypes[type].name;
 	else
 		return String();
+}
+
+ByteString GameController::TakeScreenshot(int captureUI, int fileType)
+{
+	return gameView->TakeScreenshot(captureUI, fileType);
 }
 
 int GameController::Record(bool record)

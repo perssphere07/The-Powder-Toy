@@ -1,6 +1,7 @@
 #ifndef GAMEVIEW_H
 #define GAMEVIEW_H
 
+#include <ctime>
 #include <vector>
 #include <deque>
 
@@ -72,6 +73,8 @@ private:
 
 	bool doScreenshot;
 	int screenshotIndex;
+	time_t lastScreenshotTime;
+	int recordingIndex;
 	bool recording;
 	int recordingFolder;
 
@@ -141,8 +144,6 @@ private:
 
 	void SetSaveButtonTooltips();
 
-	void screenshot();
-
 	void enableShiftBehaviour();
 	void disableShiftBehaviour();
 	void enableCtrlBehaviour();
@@ -174,6 +175,7 @@ public:
 	void BeginStampSelection();
 	ui::Point GetPlaceSaveOffset() { return placeSaveOffset; }
 	void SetPlaceSaveOffset(ui::Point offset) { placeSaveOffset = offset; }
+	ByteString TakeScreenshot(int captureUI, int fileType);
 	int Record(bool record);
 
 	//all of these are only here for one debug lines

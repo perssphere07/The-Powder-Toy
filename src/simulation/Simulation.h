@@ -105,6 +105,8 @@ public:
 	//Simulation Settings
 	int edgeMode;
 	int gravityMode;
+	float customGravityX;
+	float customGravityY;
 	int legacy_enable;
 	int aheat_enable;
 	int water_equal_test;
@@ -127,7 +129,7 @@ public:
 
 	int is_blocking(int t, int x, int y);
 	int is_boundary(int pt, int x, int y);
-	int find_next_boundary(int pt, int *x, int *y, int dm, int *em);
+	int find_next_boundary(int pt, int *x, int *y, int dm, int *em, bool reverse);
 	void photoelectric_effect(int nx, int ny);
 	unsigned direction_to_map(float dx, float dy, int t);
 	int do_move(int i, int x, int y, float nxf, float nyf);

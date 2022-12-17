@@ -17,9 +17,8 @@
 #endif
 
 #include <iostream>
-#include "Config.h"
 #if defined(LIN)
-#include "icon.h"
+# include "powder-128.png.h"
 #endif
 #include <csignal>
 #include <stdexcept>
@@ -160,12 +159,6 @@ void CalculateMousePosition(int *x, int *y)
 		*y = (globalMy - windowY) / scale;
 }
 
-#ifdef OGLI
-void blit()
-{
-	SDL_GL_SwapWindow(sdl_window);
-}
-#else
 void blit(pixel * vid)
 {
 	SDL_UpdateTexture(sdl_texture, NULL, vid, WINDOWW * sizeof (Uint32));
@@ -175,7 +168,6 @@ void blit(pixel * vid)
 	SDL_RenderCopy(sdl_renderer, sdl_texture, NULL, NULL);
 	SDL_RenderPresent(sdl_renderer);
 }
-#endif
 
 bool RecreateWindow();
 void SDLOpen()
@@ -221,9 +213,14 @@ void SDLOpen()
 	SendMessage(WindowHandle, WM_SETICON, ICON_BIG, (LPARAM)hIconBig);
 #endif
 #ifdef LIN
-	SDL_Surface *icon = SDL_CreateRGBSurfaceFrom((void*)app_icon, 128, 128, 32, 512, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-	SDL_SetWindowIcon(sdl_window, icon);
-	SDL_FreeSurface(icon);
+	std::vector<pixel> imageData;
+	int imgw, imgh;
+	if (PngDataToPixels(imageData, imgw, imgh, reinterpret_cast<const char *>(icon_png), icon_png_size, false))
+	{
+		SDL_Surface *icon = SDL_CreateRGBSurfaceFrom(&imageData[0], imgw, imgh, 32, imgw * sizeof(pixel), 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+		SDL_SetWindowIcon(sdl_window, icon);
+		SDL_FreeSurface(icon);
+	}
 #endif
 }
 
@@ -324,6 +321,8 @@ std::map<ByteString, ByteString> readArguments(int argc, char * argv[])
 	//Defaults
 	arguments["scale"] = "";
 	arguments["proxy"] = "";
+	arguments["cafile"] = "";
+	arguments["capath"] = "";
 	arguments["nohud"] = "false"; //the nohud, sound, and scripts commands currently do nothing.
 	arguments["sound"] = "false";
 	arguments["kiosk"] = "false";
@@ -332,24 +331,33 @@ std::map<ByteString, ByteString> readArguments(int argc, char * argv[])
 	arguments["open"] = "";
 	arguments["ddir"] = "";
 	arguments["ptsave"] = "";
-	arguments["font"] = "";
 
 	for (int i=1; i<argc; i++)
 	{
-		if (!strncmp(argv[i], "scale:", 6) && argv[i]+6)
+		if (!strncmp(argv[i], "scale:", 6) && argv[i][6])
 		{
-			arguments["scale"] = argv[i]+6;
-		}
-		if (!strncmp(argv[i], "font:", 5) && argv[i]+5)
-		{
-			arguments["font"] = argv[i]+5;
+			arguments["scale"] = &argv[i][6];
 		}
 		else if (!strncmp(argv[i], "proxy:", 6))
 		{
-			if(argv[i]+6)
-				arguments["proxy"] = argv[i]+6;
+			if(argv[i][6])
+				arguments["proxy"] = &argv[i][6];
 			else
 				arguments["proxy"] = "false";
+		}
+		else if (!strncmp(argv[i], "cafile:", 7))
+		{
+			if(argv[i][7])
+				arguments["cafile"] = &argv[i][7];
+			else
+				arguments["cafile"] = "false";
+		}
+		else if (!strncmp(argv[i], "capath:", 7))
+		{
+			if(argv[i][7])
+				arguments["capath"] = &argv[i][7];
+			else
+				arguments["capath"] = "false";
 		}
 		else if (!strncmp(argv[i], "nohud", 5))
 		{
@@ -371,6 +379,10 @@ std::map<ByteString, ByteString> readArguments(int argc, char * argv[])
 		{
 			arguments["scripts"] = "true";
 		}
+		else if (!strncmp(argv[i], "file:", 5) && strlen(argv[i]) >= 7)
+		{
+			arguments["open"] = format::URLDecode(argv[i] + 7); // skip "file://"
+		}
 		else if (!strncmp(argv[i], "open", 5) && i+1<argc)
 		{
 			arguments["open"] = argv[i+1];
@@ -380,6 +392,11 @@ std::map<ByteString, ByteString> readArguments(int argc, char * argv[])
 		{
 			arguments["ddir"] = argv[i+1];
 			i++;
+		}
+		else if (!strncmp(argv[i], "ptsave:", 7) && strlen(argv[i]) >= 8)
+		{
+			arguments["ptsave"] = argv[i];
+			break;
 		}
 		else if (!strncmp(argv[i], "ptsave", 7) && i+1<argc)
 		{
@@ -451,11 +468,11 @@ void EventProcess(SDL_Event event)
 		break;
 	case SDL_MOUSEWHEEL:
 	{
-		int x = event.wheel.x;
+		// int x = event.wheel.x;
 		int y = event.wheel.y;
 		if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
 		{
-			x *= -1;
+			// x *= -1;
 			y *= -1;
 		}
 
@@ -602,11 +619,7 @@ void EngineProcess()
 							 engine->GetForceIntegerScaling());
 			}
 
-#ifdef OGLI
-			blit();
-#else
 			blit(engine->g->vid);
-#endif
 		}
 
 		int frameTime = SDL_GetTicks() - frameStart;
@@ -673,11 +686,7 @@ void BlueScreen(String detailMessage)
 		while (SDL_PollEvent(&event))
 			if(event.type == SDL_QUIT)
 				exit(-1);
-#ifdef OGLI
-		blit();
-#else
 		blit(engine->g->vid);
-#endif
 	}
 }
 
@@ -751,7 +760,7 @@ int main(int argc, char * argv[])
 	}
 	else
 	{
-		char *ddir = SDL_GetPrefPath(NULL, "The Powder Toy");
+		char *ddir = SDL_GetPrefPath(NULL, APPDATA);
 #ifdef WIN
 		struct _stat s;
 		if (_stat("powder.pref", &s) != 0)
@@ -814,34 +823,32 @@ int main(int argc, char * argv[])
 		Client::Ref().SetPref("Scale", scale);
 	}
 
-	ByteString proxyString = "";
-	if(arguments["proxy"].length())
-	{
-		if(arguments["proxy"] == "false")
+	auto clientConfig = [](ByteString cmdlineValue, ByteString configName, ByteString defaultValue) {
+		ByteString value;
+		if (cmdlineValue.length())
 		{
-			proxyString = "";
-			Client::Ref().SetPref("Proxy", "");
+			value = cmdlineValue;
+			if (value == "false")
+			{
+				value = defaultValue;
+			}
+			Client::Ref().SetPref(configName, value);
 		}
 		else
 		{
-			proxyString = (arguments["proxy"]);
-			Client::Ref().SetPref("Proxy", arguments["proxy"]);
+			value = Client::Ref().GetPrefByteString(configName, defaultValue);
 		}
-	}
-	else
-	{
-		auto proxyPref = Client::Ref().GetPrefByteString("Proxy", "");
-		if (proxyPref.length())
-		{
-			proxyString = proxyPref;
-		}
-	}
+		return value;
+	};
+	ByteString proxyString = clientConfig(arguments["proxy"], "Proxy", "");
+	ByteString cafileString = clientConfig(arguments["cafile"], "CAFile", "");
+	ByteString capathString = clientConfig(arguments["capath"], "CAPath", "");
 
 	bool disableNetwork = false;
 	if (arguments.find("disable-network") != arguments.end())
 		disableNetwork = true;
 
-	Client::Ref().Initialise(proxyString, disableNetwork);
+	Client::Ref().Initialise(proxyString, cafileString, capathString, disableNetwork);
 
 	// TODO: maybe bind the maximum allowed scale to screen size somehow
 	if(scale < 1 || scale > SCALE_MAXIMUM)
@@ -859,19 +866,6 @@ int main(int argc, char * argv[])
 			showLargeScreenDialog = true;
 		}
 	}
-
-#ifdef OGLI
-	SDL_GL_SetAttribute (SDL_GL_DOUBLEBUFFER, 1);
-	//glScaled(2.0f, 2.0f, 1.0f);
-#endif
-#if defined(OGLI) && !defined(MACOSX)
-	int status = glewInit();
-	if(status != GLEW_OK)
-	{
-		fprintf(stderr, "Initializing Glew: %d\n", status);
-		exit(-1);
-	}
-#endif
 
 	StopTextInput();
 
@@ -921,15 +915,15 @@ int main(int argc, char * argv[])
 			{
 				try
 				{
-					std::vector<unsigned char> gameSaveData = Client::Ref().ReadFile(arguments["open"]);
-					if (!gameSaveData.size())
+					std::vector<char> gameSaveData;
+					if (!Platform::ReadFile(gameSaveData, arguments["open"]))
 					{
 						new ErrorMessage("Error", "Could not read file");
 					}
 					else
 					{
 						SaveFile * newFile = new SaveFile(arguments["open"]);
-						GameSave * newSave = new GameSave(gameSaveData);
+						GameSave * newSave = new GameSave(std::move(gameSaveData));
 						newFile->SetGameSave(newSave);
 						gameController->LoadSaveFile(newFile);
 						delete newFile;
@@ -953,11 +947,7 @@ int main(int argc, char * argv[])
 			engine->g->drawrect((engine->GetWidth()/2)-100, (engine->GetHeight()/2)-25, 200, 50, 255, 255, 255, 180);
 			engine->g->drawtext((engine->GetWidth()/2)-(Graphics::textwidth("Loading save...")/2), (engine->GetHeight()/2)-5, "Loading save...", style::Colour::InformationTitle.Red, style::Colour::InformationTitle.Green, style::Colour::InformationTitle.Blue, 255);
 
-#ifdef OGLI
-			blit();
-#else
 			blit(engine->g->vid);
-#endif
 			ByteString ptsaveArg = arguments["ptsave"];
 			try
 			{
@@ -981,10 +971,10 @@ int main(int argc, char * argv[])
 				SaveInfo * newSave = Client::Ref().GetSave(saveId, 0);
 				if (!newSave)
 					throw std::runtime_error("Could not load save info");
-				std::vector<unsigned char> saveData = Client::Ref().GetSaveData(saveId, 0);
+				auto saveData = Client::Ref().GetSaveData(saveId, 0);
 				if (!saveData.size())
 					throw std::runtime_error(("Could not load save\n" + Client::Ref().GetLastError()).ToUtf8());
-				GameSave * newGameSave = new GameSave(saveData);
+				GameSave * newGameSave = new GameSave(std::move(saveData));
 				newSave->SetGameSave(newGameSave);
 
 				gameController->LoadSave(newSave);

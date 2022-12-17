@@ -53,17 +53,6 @@ int Simulation::Load(const GameSave * originalSave, bool includePressure, int fu
 	if (!originalSave)
 		return 1;
 	auto save = std::unique_ptr<GameSave>(new GameSave(*originalSave));
-	try
-	{
-		save->Expand();
-	}
-	catch (const ParseException &e)
-	{
-#ifdef LUACONSOLE
-		luacon_ci->SetLastError(ByteString(e.what()).FromUtf8());
-#endif
-		return 1;
-	}
 
 	//Align to blockMap
 	int blockX = (fullX + CELL/2)/CELL;
@@ -116,7 +105,7 @@ int Simulation::Load(const GameSave * originalSave, bool includePressure, int fu
 		}
 
 		int type = tempPart->type;
-		if (type < 0 && type >= PT_NUM)
+		if (type < 0 || type >= PT_NUM)
 		{
 			tempPart->type = 0;
 			continue;
@@ -545,6 +534,8 @@ void Simulation::SaveSimOptions(GameSave * gameSave)
 	if (!gameSave)
 		return;
 	gameSave->gravityMode = gravityMode;
+	gameSave->customGravityX = customGravityX;
+	gameSave->customGravityY = customGravityY;
 	gameSave->airMode = air->airMode;
 	gameSave->ambientAirTemp = air->ambientAirTemp;
 	gameSave->edgeMode = edgeMode;
@@ -1250,10 +1241,7 @@ void Simulation::ApplyDecorationLine(int x1, int y1, int x2, int y2, int colR, i
 	}
 	dx = x2 - x1;
 	dy = abs(y2 - y1);
-	if (dx)
-		de = dy/(float)dx;
-	else
-		de = 0.0f;
+	de = dx ? dy/(float)dx : 0.0f;
 	y = y1;
 	sy = (y1<y2) ? 1 : -1;
 	for (x=x1; x<=x2; x++)
@@ -1429,10 +1417,7 @@ void Simulation::ToolLine(int x1, int y1, int x2, int y2, int tool, Brush * cBru
 	}
 	dx = x2 - x1;
 	dy = abs(y2 - y1);
-	if (dx)
-		de = dy/(float)dx;
-	else
-		de = 0.0f;
+	de = dx ? dy/(float)dx : 0.0f;
 	y = y1;
 	sy = (y1<y2) ? 1 : -1;
 	for (x=x1; x<=x2; x++)
@@ -1565,10 +1550,7 @@ void Simulation::CreateWallLine(int x1, int y1, int x2, int y2, int rx, int ry, 
 	}
 	dx = x2 - x1;
 	dy = abs(y2 - y1);
-	if (dx)
-		de = dy/(float)dx;
-	else
-		de = 0.0f;
+	de = dx ? dy/(float)dx : 0.0f;
 	y = y1;
 	sy = (y1<y2) ? 1 : -1;
 	for (x=x1; x<=x2; x++)
@@ -1773,10 +1755,7 @@ void Simulation::CreateLine(int x1, int y1, int x2, int y2, int c, Brush * cBrus
 	}
 	dx = x2 - x1;
 	dy = abs(y2 - y1);
-	if (dx)
-		de = dy/(float)dx;
-	else
-		de = 0.0f;
+	de = dx ? dy/(float)dx : 0.0f;
 	y = y1;
 	sy = (y1<y2) ? 1 : -1;
 	for (x=x1; x<=x2; x++)
@@ -1845,11 +1824,7 @@ int Simulation::CreatePartFlags(int x, int y, int c, int flags)
 	}
 	else
 	{
-		if (create_part(-2, x, y, TYP(c), ID(c)) == -1)
-		{
-			return 1;
-		}
-		return 0;
+		return (create_part(-2, x, y, TYP(c), ID(c)) == -1);
 	}
 
 	// I'm sure at least one compiler exists that would complain if this wasn't here
@@ -1885,10 +1860,7 @@ void Simulation::CreateLine(int x1, int y1, int x2, int y2, int c)
 	dx = x2 - x1;
 	dy = abs(y2 - y1);
 	e = 0.0f;
-	if (dx)
-		de = dy/(float)dx;
-	else
-		de = 0.0f;
+	de = dx ? dy/(float)dx : 0.0f;
 	y = y1;
 	sy = (y1<y2) ? 1 : -1;
 	for (x=x1; x<=x2; x++)
@@ -2304,6 +2276,8 @@ void Simulation::clear_sim(void)
 	memset(gol, 0, sizeof(gol));
 	memset(portalp, 0, sizeof(portalp));
 	memset(fighters, 0, sizeof(fighters));
+	memset(&player, 0, sizeof(player));
+	memset(&player2, 0, sizeof(player2));
 	std::fill(elementCount, elementCount+PT_NUM, 0);
 	elementRecount = true;
 	fighcount = 0;
@@ -2701,10 +2675,8 @@ int Simulation::try_move(int i, int x, int y, int nx, int ny)
 			case PT_INVIS:
 			{
 				float pressureResistance = 0.0f;
-				if (parts[ID(r)].tmp > 0)
-					pressureResistance = (float)parts[ID(r)].tmp;
-				else
-					pressureResistance = 4.0f;
+				pressureResistance = (parts[ID(r)].tmp > 0) ? (float)parts[ID(r)].tmp : 4.0f;
+
 				if (pv[ny/CELL][nx/CELL] >= -pressureResistance && pv[ny/CELL][nx/CELL] <= pressureResistance)
 				{
 					part_change_type(i,x,y,PT_NEUT);
@@ -2834,8 +2806,19 @@ int Simulation::try_move(int i, int x, int y, int nx, int ny)
 		}
 		break;
 	case PT_CNCT:
-		if (y < ny && (TYP(pmap[y+1][x]) == PT_CNCT || TYP(pmap[y+1][x]) == PT_ROCK)) //check below CNCT for another CNCT or ROCK
-			return 0;
+		{
+			float cnctGravX, cnctGravY; // Calculate offset from gravity
+			GetGravityField(x, y, elements[PT_CNCT].Gravity, elements[PT_CNCT].Gravity, cnctGravX, cnctGravY);
+			int offsetX = 0, offsetY = 0;
+			if (cnctGravX > 0.0f) offsetX++;
+			else if (cnctGravX < 0.0f) offsetX--;
+			if (cnctGravY > 0.0f) offsetY++;
+			else if (cnctGravY < 0.0f) offsetY--;
+			if ((offsetX != 0) != (offsetY != 0) && // Is this a different position (avoid diagonals, doesn't work well)
+				((nx - x) * offsetX > 0 || (ny - y) * offsetY > 0) && // Is the destination particle below the moving particle
+				(TYP(pmap[y+offsetY][x+offsetX]) == PT_CNCT || TYP(pmap[y+offsetY][x+offsetX]) == PT_ROCK)) //check below CNCT for another CNCT or ROCK
+				return 0;
+		}
 		break;
 	case PT_GBMB:
 		if (parts[i].life > 0)
@@ -3004,25 +2987,35 @@ int Simulation::is_boundary(int pt, int x, int y)
 	return 1;
 }
 
-int Simulation::find_next_boundary(int pt, int *x, int *y, int dm, int *em)
+int Simulation::find_next_boundary(int pt, int *x, int *y, int dm, int *em, bool reverse)
 {
 	static int dx[8] = {1,1,0,-1,-1,-1,0,1};
 	static int dy[8] = {0,1,1,1,0,-1,-1,-1};
 	static int de[8] = {0x83,0x07,0x0E,0x1C,0x38,0x70,0xE0,0xC1};
-	int i, ii, i0;
 
 	if (*x <= 0 || *x >= XRES-1 || *y <= 0 || *y >= YRES-1)
+	{
 		return 0;
+	}
 
-	if (*em != -1) {
-		i0 = *em;
-		dm &= de[i0];
-	} else
-		i0 = 0;
+	if (*em != -1)
+	{
+		dm &= de[*em];
+	}
 
-	for (ii=0; ii<8; ii++) {
-		i = (ii + i0) & 7;
-		if ((dm & (1 << i)) && is_boundary(pt, *x+dx[i], *y+dy[i])) {
+	unsigned int mask = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		if ((dm & (1U << i)) && is_blocking(pt, *x + dx[i], *y + dy[i]))
+		{
+			mask |= (1U << i);
+		}
+	}
+	for (int i = 0; i < 8; ++i)
+	{
+		int n = (i + (reverse ? 1 : -1)) & 7;
+		if (((mask & (1U << i))) && !(mask & (1U << n)))
+		{
 			*x += dx[i];
 			*y += dy[i];
 			*em = i;
@@ -3056,9 +3049,9 @@ int Simulation::get_normal(int pt, int x, int y, float dx, float dy, float *nx, 
 	j = 0;
 	for (i=0; i<SURF_RANGE; i++) {
 		if (lv)
-			lv = find_next_boundary(pt, &lx, &ly, ldm, &lm);
+			lv = find_next_boundary(pt, &lx, &ly, ldm, &lm, true);
 		if (rv)
-			rv = find_next_boundary(pt, &rx, &ry, rdm, &rm);
+			rv = find_next_boundary(pt, &rx, &ry, rdm, &rm, false);
 		j += lv + rv;
 		if (!lv && !rv)
 			break;
@@ -3069,7 +3062,6 @@ int Simulation::get_normal(int pt, int x, int y, float dx, float dy, float *nx, 
 
 	if ((lx == rx) && (ly == ry))
 		return 0;
-
 	ex = float(rx - lx);
 	ey = float(ry - ly);
 	r = 1.0f/hypot(ex, ey);
@@ -3089,6 +3081,10 @@ int Simulation::get_normal_interp(int pt, float x0, float y0, float dx, float dy
 	for (i=0; i<NORMAL_INTERP; i++) {
 		x = (int)(x0 + 0.5f);
 		y = (int)(y0 + 0.5f);
+		if (x < 0 || y < 0 || x >= XRES || y >= YRES)
+		{
+			return 0;
+		}
 		if (is_boundary(pt, x, y))
 			break;
 		x0 += dx;
@@ -3322,23 +3318,40 @@ int Simulation::create_part(int p, int x, int y, int t, int v)
 
 void Simulation::GetGravityField(int x, int y, float particleGrav, float newtonGrav, float & pGravX, float & pGravY)
 {
-	pGravX = newtonGrav*gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
-	pGravY = newtonGrav*gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
 	switch (gravityMode)
 	{
-		default:
-		case 0: //normal, vertical gravity
-			pGravY += particleGrav;
-			break;
-		case 1: //no gravity
-			break;
-		case 2: //radial gravity
-			if (x-XCNTR != 0 || y-YCNTR != 0)
+	default:
+	case 0: //normal, vertical gravity
+		pGravX = 0;
+		pGravY = particleGrav;
+		break;
+	case 1: //no gravity
+		pGravX = 0;
+		pGravY = 0;
+		break;
+	case 2: //radial gravity
+		{
+			pGravX = 0;
+			pGravY = 0;
+			auto dx = float(x - XCNTR);
+			auto dy = float(y - YCNTR);
+			if (dx || dy)
 			{
-				float pGravMult = particleGrav/sqrtf(float((x-XCNTR)*(x-XCNTR) + (y-YCNTR)*(y-YCNTR)));
-				pGravX -= pGravMult * (float)(x - XCNTR);
-				pGravY -= pGravMult * (float)(y - YCNTR);
+				auto pGravD = 0.01f - hypotf(dx, dy);
+				pGravX = particleGrav * (dx / pGravD);
+				pGravY = particleGrav * (dy / pGravD);
 			}
+		}
+		break;
+	case 3: //custom gravity
+		pGravX = particleGrav * customGravityX;
+		pGravY = particleGrav * customGravityY;
+		break;
+	}
+	if (newtonGrav)
+	{
+		pGravX += newtonGrav*gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
+		pGravY += newtonGrav*gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
 	}
 }
 
@@ -3351,15 +3364,10 @@ void Simulation::create_gain_photon(int pp)//photons from PHOT going through GLO
 		return;
 	i = pfree;
 
-	lr = RNG::Ref().between(0, 1);
+	lr = 2*RNG::Ref().between(0, 1) - 1; // -1 or 1
 
-	if (lr) {
-		xx = parts[pp].x - 0.3*parts[pp].vy;
-		yy = parts[pp].y + 0.3*parts[pp].vx;
-	} else {
-		xx = parts[pp].x + 0.3*parts[pp].vy;
-		yy = parts[pp].y - 0.3*parts[pp].vx;
-	}
+	xx = parts[pp].x - lr*0.3*parts[pp].vy;
+	yy = parts[pp].y + lr*0.3*parts[pp].vx;
 
 	nx = (int)(xx + 0.5f);
 	ny = (int)(yy + 0.5f);
@@ -3444,11 +3452,8 @@ void Simulation::delete_part(int x, int y)//calls kill_part with the particle lo
 
 	if (x<0 || y<0 || x>=XRES || y>=YRES)
 		return;
-	if (photons[y][x]) {
-		i = photons[y][x];
-	} else {
-		i = pmap[y][x];
-	}
+
+	i = photons[y][x] ? photons[y][x] : pmap[y][x];
 
 	if (!i)
 		return;
@@ -3467,7 +3472,6 @@ void Simulation::UpdateParticles(int start, int end)
 	int h_count = 0;
 	int surround[8];
 	int surround_hconduct[8];
-	float pGravX, pGravY, pGravD;
 	bool transitionOccurred;
 
 	//the main particle loop function, goes over all particles.
@@ -3479,18 +3483,24 @@ void Simulation::UpdateParticles(int start, int end)
 			x = (int)(parts[i].x+0.5f);
 			y = (int)(parts[i].y+0.5f);
 
-			//this kills any particle out of the screen, or in a wall where it isn't supposed to go
-			if (x<CELL || y<CELL || x>=XRES-CELL || y>=YRES-CELL ||
-			        (bmap[y/CELL][x/CELL] &&
-			         (bmap[y/CELL][x/CELL]==WL_WALL ||
-			          bmap[y/CELL][x/CELL]==WL_WALLELEC ||
-			          bmap[y/CELL][x/CELL]==WL_ALLOWAIR ||
-			          (bmap[y/CELL][x/CELL]==WL_DESTROYALL) ||
-			          (bmap[y/CELL][x/CELL]==WL_ALLOWLIQUID && !(elements[t].Properties&TYPE_LIQUID)) ||
-			          (bmap[y/CELL][x/CELL]==WL_ALLOWPOWDER && !(elements[t].Properties&TYPE_PART)) ||
-			          (bmap[y/CELL][x/CELL]==WL_ALLOWGAS && !(elements[t].Properties&TYPE_GAS)) || //&& elements[t].Falldown!=0 && parts[i].type!=PT_FIRE && parts[i].type!=PT_SMKE && parts[i].type!=PT_CFLM) ||
-					  (bmap[y/CELL][x/CELL]==WL_ALLOWENERGY && !(elements[t].Properties&TYPE_ENERGY)) ||
-			          (bmap[y/CELL][x/CELL]==WL_EWALL && !emap[y/CELL][x/CELL])) && (t!=PT_STKM) && (t!=PT_STKM2) && (t!=PT_FIGH)))
+			// Kill a particle off screen
+			if (x<CELL || y<CELL || x>=XRES-CELL || y>=YRES-CELL)
+			{
+				kill_part(i);
+				continue;
+			}
+
+			// Kill a particle in a wall where it isn't supposed to go
+			if (bmap[y/CELL][x/CELL] &&
+			   (bmap[y/CELL][x/CELL]==WL_WALL ||
+			    bmap[y/CELL][x/CELL]==WL_WALLELEC ||
+			    bmap[y/CELL][x/CELL]==WL_ALLOWAIR ||
+			    (bmap[y/CELL][x/CELL]==WL_DESTROYALL) ||
+			    (bmap[y/CELL][x/CELL]==WL_ALLOWLIQUID && !(elements[t].Properties&TYPE_LIQUID)) ||
+			    (bmap[y/CELL][x/CELL]==WL_ALLOWPOWDER && !(elements[t].Properties&TYPE_PART)) ||
+			    (bmap[y/CELL][x/CELL]==WL_ALLOWGAS && !(elements[t].Properties&TYPE_GAS)) || //&& elements[t].Falldown!=0 && parts[i].type!=PT_FIRE && parts[i].type!=PT_SMKE && parts[i].type!=PT_CFLM) ||
+			            (bmap[y/CELL][x/CELL]==WL_ALLOWENERGY && !(elements[t].Properties&TYPE_ENERGY)) ||
+			    (bmap[y/CELL][x/CELL]==WL_EWALL && !emap[y/CELL][x/CELL])) && (t!=PT_STKM) && (t!=PT_STKM2) && (t!=PT_FIGH))
 			{
 				kill_part(i);
 				continue;
@@ -3538,35 +3548,10 @@ void Simulation::UpdateParticles(int start, int end)
 				}
 			}
 
-			pGravX = pGravY = 0;
-			if (!(elements[t].Properties & TYPE_SOLID))
+			float pGravX = 0, pGravY = 0;
+			if (!(elements[t].Properties & TYPE_SOLID) && (elements[t].Gravity || elements[t].NewtonianGravity))
 			{
-				if (elements[t].Gravity)
-				{
-					//Gravity mode by Moach
-					switch (gravityMode)
-					{
-					default:
-					case 0:
-						pGravX = 0.0f;
-						pGravY = elements[t].Gravity;
-						break;
-					case 1:
-						pGravX = pGravY = 0.0f;
-						break;
-					case 2:
-						pGravD = 0.01f - hypotf(float(x - XCNTR), float(y - YCNTR));
-						pGravX = elements[t].Gravity * ((float)(x - XCNTR) / pGravD);
-						pGravY = elements[t].Gravity * ((float)(y - YCNTR) / pGravD);
-						break;
-					}
-				}
-				if (elements[t].NewtonianGravity)
-				{
-					//Get some gravity from the gravity map
-					pGravX += elements[t].NewtonianGravity * gravx[(y/CELL)*(XRES/CELL)+(x/CELL)];
-					pGravY += elements[t].NewtonianGravity * gravy[(y/CELL)*(XRES/CELL)+(x/CELL)];
-				}
+				GetGravityField(x, y, elements[t].Gravity, elements[t].NewtonianGravity, pGravX, pGravY);
 			}
 
 			//velocity updates for the particle
@@ -3600,10 +3585,8 @@ void Simulation::UpdateParticles(int start, int end)
 					if (nx||ny) {
 						surround[j] = r = pmap[y+ny][x+nx];
 						j++;
-						if (!TYP(r))
-							surround_space++;//there is empty space
-						if (TYP(r)!=t)
-							nt++;//there is nothing or a different particle
+						surround_space += (!TYP(r)); // count empty space
+						nt += (TYP(r)!=t); // count empty space and particles of different type
 					}
 				}
 
@@ -3613,13 +3596,20 @@ void Simulation::UpdateParticles(int start, int end)
 
 			if (!legacy_enable)
 			{
-				if (y-2 >= 0 && y-2 < YRES && (elements[t].Properties&TYPE_LIQUID) && (t!=PT_GEL || gel_scale > (1 + RNG::Ref().between(0, 254)))) {//some heat convection for liquids
-					r = pmap[y-2][x];
-					if (!(!r || parts[i].type != TYP(r))) {
-						if (parts[i].temp>parts[ID(r)].temp) {
-							swappage = parts[i].temp;
-							parts[i].temp = parts[ID(r)].temp;
-							parts[ID(r)].temp = swappage;
+				if ((elements[t].Properties&TYPE_LIQUID) && (t!=PT_GEL || gel_scale > (1 + RNG::Ref().between(0, 254))))
+				{
+					float convGravX, convGravY;
+					GetGravityField(x, y, -2.0f, -2.0f, convGravX, convGravY);
+					auto offsetX = int(std::round(convGravX + x));
+					auto offsetY = int(std::round(convGravY + y));
+					if ((offsetX != x || offsetY != y) && offsetX >= 0 && offsetX < XRES && offsetY >= 0 && offsetY < YRES) {//some heat convection for liquids
+						r = pmap[offsetY][offsetX];
+						if (!(!r || parts[i].type != TYP(r))) {
+							if (parts[i].temp>parts[ID(r)].temp) {
+								swappage = parts[i].temp;
+								parts[i].temp = parts[ID(r)].temp;
+								parts[ID(r)].temp = swappage;
+							}
 						}
 					}
 				}
@@ -3635,8 +3625,8 @@ void Simulation::UpdateParticles(int start, int end)
 					if (aheat_enable && !(elements[t].Properties&PROP_NOAMBHEAT))
 					{
 #ifdef REALISTIC
-						c_heat = parts[i].temp*96.645/elements[t].HeatConduct*gel_scale*fabs(elements[t].Weight) + hv[y/CELL][x/CELL]*100*(pv[y/CELL][x/CELL]+273.15f)/256;
-						float c_Cm = 96.645/elements[t].HeatConduct*gel_scale*fabs(elements[t].Weight)  + 100*(pv[y/CELL][x/CELL]+273.15f)/256;
+						c_heat = parts[i].temp*96.645/elements[t].HeatConduct*gel_scale*fabs(elements[t].Weight) + hv[y/CELL][x/CELL]*100*(pv[y/CELL][x/CELL]-MIN_PRESSURE)/(MAX_PRESSURE-MIN_PRESSURE)*2;
+						float c_Cm = 96.645/elements[t].HeatConduct*gel_scale*fabs(elements[t].Weight) + 100*(pv[y/CELL][x/CELL]-MIN_PRESSURE)/(MAX_PRESSURE-MIN_PRESSURE)*2;
 						pt = c_heat/c_Cm;
 						pt = restrict_flt(pt, -MAX_TEMP+MIN_TEMP, MAX_TEMP-MIN_TEMP);
 						parts[i].temp = pt;
@@ -3786,10 +3776,7 @@ void Simulation::UpdateParticles(int start, int end)
 							{
 								pt = (c_heat - platent[t])/c_Cm;
 
-								if (RNG::Ref().chance(1, 4))
-									t = PT_SALT;
-								else
-									t = PT_WTRV;
+								t = RNG::Ref().chance(1, 4) ? PT_SALT : PT_WTRV;
 							}
 							else
 							{
@@ -3797,10 +3784,7 @@ void Simulation::UpdateParticles(int start, int end)
 								s = 0;
 							}
 #else
-							if (RNG::Ref().chance(1, 4))
-								t = PT_SALT;
-							else
-								t = PT_WTRV;
+							t = RNG::Ref().chance(1, 4) ? PT_SALT : PT_WTRV;
 #endif
 						}
 						else if (t == PT_BRMT)
@@ -3855,10 +3839,7 @@ void Simulation::UpdateParticles(int start, int end)
 #endif
 						else if (t == PT_WTRV)
 						{
-							if (pt < 273.0f)
-								t = PT_RIME;
-							else
-								t = PT_DSTW;
+							t = (pt < 273.0f) ? PT_RIME : PT_DSTW;
 						}
 						else if (t == PT_LAVA)
 						{
@@ -4351,8 +4332,18 @@ killed:
 						continue;
 					}
 
-					if (TYP(r))
-						parts[i].ctype &= elements[TYP(r)].PhotonReflectWavelengths;
+					if (t == PT_PHOT)
+					{
+						auto mask = elements[TYP(r)].PhotonReflectWavelengths;
+						if (TYP(r) == PT_LITH)
+						{
+							int wl_bin = parts[ID(r)].ctype / 4;
+							if (wl_bin < 0) wl_bin = 0;
+							if (wl_bin > 25) wl_bin = 25;
+							mask = (0x1F << wl_bin);
+						}
+						parts[i].ctype &= mask;
+					}
 
 					if (get_normal_interp(t, parts[i].x, parts[i].y, parts[i].vx, parts[i].vy, &nrx, &nry))
 					{
@@ -4451,10 +4442,8 @@ killed:
 							// but no point trying this if particle is stuck in a block of identical particles
 							dx = parts[i].vx - parts[i].vy*r;
 							dy = parts[i].vy + parts[i].vx*r;
-							if (fabsf(dy)>fabsf(dx))
-								mv = fabsf(dy);
-							else
-								mv = fabsf(dx);
+
+							mv = std::max(fabsf(dx), fabsf(dy));
 							dx /= mv;
 							dy /= mv;
 							if (do_move(i, x, y, clear_xf+dx, clear_yf+dy))
@@ -4504,10 +4493,9 @@ killed:
 								if (TYP(pmap[clear_y][j])!=t || (bmap[clear_y/CELL][j/CELL] && bmap[clear_y/CELL][j/CELL]!=WL_STREAM))
 									break;
 							}
-							if (parts[i].vy>0)
-								r = 1;
-							else
-								r = -1;
+
+							r = (parts[i].vy>0) ? 1 : -1;
+
 							if (s==1)
 								for (j=ny+r; j>=0 && j<YRES && j>=ny-rt && j<ny+rt; j+=r)
 								{
@@ -4527,10 +4515,10 @@ killed:
 							float nxf, nyf, prev_pGravX, prev_pGravY, ptGrav = elements[t].Gravity;
 							s = 0;
 							// stagnant is true if FLAG_STAGNANT was set for this particle in previous frame
-							if (!stagnant || nt) //nt is if there is an something else besides the current particle type, around the particle
-								rt = 30;//slight less water lag, although it changes how it moves a lot
-							else
-								rt = 10;
+							// nt is if there is something else besides the current particle type around the particle
+							// 30 gives slightly less water lag, although it changes how it moves a lot
+							rt = (!stagnant || nt) ? 30 : 10;
+
 							// clear_xf, clear_yf is the last known position that the particle should almost certainly be able to move to
 							nxf = clear_xf;
 							nyf = clear_yf;
@@ -4540,29 +4528,9 @@ killed:
 							for (j=0;j<rt;j++)
 							{
 								// Calculate overall gravity direction
-								switch (gravityMode)
-								{
-									default:
-									case 0:
-										pGravX = 0.0f;
-										pGravY = ptGrav;
-										break;
-									case 1:
-										pGravX = pGravY = 0.0f;
-										break;
-									case 2:
-										pGravD = 0.01f - hypotf(float(nx - XCNTR), float(ny - YCNTR));
-										pGravX = ptGrav * ((float)(nx - XCNTR) / pGravD);
-										pGravY = ptGrav * ((float)(ny - YCNTR) / pGravD);
-										break;
-								}
-								pGravX += gravx[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
-								pGravY += gravy[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
+								GetGravityField(nx, ny, ptGrav, 1.0f, pGravX, pGravY);
 								// Scale gravity vector so that the largest component is 1 pixel
-								if (fabsf(pGravY)>fabsf(pGravX))
-									mv = fabsf(pGravY);
-								else
-									mv = fabsf(pGravX);
+								mv = std::max(fabsf(pGravX), fabsf(pGravY));
 								if (mv<0.0001f) break;
 								pGravX /= mv;
 								pGravY /= mv;
@@ -4612,29 +4580,9 @@ killed:
 								for (j=0;j<rt;j++)
 								{
 									// Calculate overall gravity direction
-									switch (gravityMode)
-									{
-										default:
-										case 0:
-											pGravX = 0.0f;
-											pGravY = ptGrav;
-											break;
-										case 1:
-											pGravX = pGravY = 0.0f;
-											break;
-										case 2:
-											pGravD = 0.01f - hypotf(float(nx - XCNTR), float(ny - YCNTR));
-											pGravX = ptGrav * ((float)(nx - XCNTR) / pGravD);
-											pGravY = ptGrav * ((float)(ny - YCNTR) / pGravD);
-											break;
-									}
-									pGravX += gravx[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
-									pGravY += gravy[(ny/CELL)*(XRES/CELL)+(nx/CELL)];
+									GetGravityField(nx, ny, ptGrav, 1.0f, pGravX, pGravY);
 									// Scale gravity vector so that the largest component is 1 pixel
-									if (fabsf(pGravY)>fabsf(pGravX))
-										mv = fabsf(pGravY);
-									else
-										mv = fabsf(pGravX);
+									mv = std::max(fabsf(pGravX), fabsf(pGravY));
 									if (mv<0.0001f) break;
 									pGravX /= mv;
 									pGravY /= mv;
@@ -4682,18 +4630,18 @@ movedone:
 
 int Simulation::GetParticleType(ByteString type)
 {
-	char * txt = (char*)type.c_str();
+	type = type.ToUpper();
 
 	// alternative names for some elements
-	if (!strcasecmp(txt, "C4"))
+	if (byteStringEqualsLiteral(type, "C4"))
 		return PT_PLEX;
-	else if (!strcasecmp(txt, "C5"))
+	else if (byteStringEqualsLiteral(type, "C5"))
 		return PT_C5;
-	else if (!strcasecmp(txt, "NONE"))
+	else if (byteStringEqualsLiteral(type, "NONE"))
 		return PT_NONE;
 	for (int i = 1; i < PT_NUM; i++)
 	{
-		if (!strcasecmp(txt, elements[i].Name.ToUtf8().c_str()) && elements[i].Name.size() && elements[i].Enabled)
+		if (elements[i].Name.size() && elements[i].Enabled && type == elements[i].Name.ToUtf8().ToUpper())
 		{
 			return i;
 		}
@@ -4781,17 +4729,11 @@ void Simulation::RecalcFreeParticles(bool do_life_dec)
 	}
 	if (lastPartUnused == -1)
 	{
-		if (parts_lastActiveIndex>=NPART-1)
-			pfree = -1;
-		else
-			pfree = parts_lastActiveIndex+1;
+		pfree = (parts_lastActiveIndex>=(NPART-1)) ? -1 : parts_lastActiveIndex+1;
 	}
 	else
 	{
-		if (parts_lastActiveIndex>=NPART-1)
-			parts[lastPartUnused].life = -1;
-		else
-			parts[lastPartUnused].life = parts_lastActiveIndex+1;
+		parts[lastPartUnused].life = (parts_lastActiveIndex>=(NPART-1)) ? -1 : parts_lastActiveIndex+1;
 	}
 	parts_lastActiveIndex = lastPartUsed;
 	if (elementRecount)
@@ -5262,6 +5204,8 @@ Simulation::Simulation():
 	GSPEED(1),
 	edgeMode(0),
 	gravityMode(0),
+	customGravityX(0),
+	customGravityY(0),
 	legacy_enable(0),
 	aheat_enable(0),
 	water_equal_test(0),

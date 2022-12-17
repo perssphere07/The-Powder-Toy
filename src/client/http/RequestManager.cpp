@@ -1,18 +1,19 @@
 #ifndef NOHTTP
+#include "Request.h" // includes curl.h, needs to come first to silence a warning on windows
 #include "RequestManager.h"
 
 #include <iostream>
 
-#include "Request.h"
-#include "Config.h"
-
 const int curl_multi_wait_timeout_ms = 100;
-const long curl_max_host_connections = 6;
+const long curl_max_host_connections = 1;
+const long curl_max_concurrent_streams = 50;
 
 namespace http
 {
 	const long timeout = 15;
 	ByteString proxy;
+	ByteString cafile;
+	ByteString capath;
 	ByteString user_agent;
 
 	void RequestManager::Shutdown()
@@ -35,16 +36,21 @@ namespace http
 		}
 	}
 
-	void RequestManager::Initialise(ByteString Proxy)
+	void RequestManager::Initialise(ByteString newProxy, ByteString newCafile, ByteString newCapath)
 	{
 		curl_global_init(CURL_GLOBAL_DEFAULT);
 		multi = curl_multi_init();
 		if (multi)
 		{
 			curl_multi_setopt(multi, CURLMOPT_MAX_HOST_CONNECTIONS, curl_max_host_connections);
+#if defined(CURL_AT_LEAST_VERSION) && CURL_AT_LEAST_VERSION(7, 67, 0)
+			curl_multi_setopt(multi, CURLMOPT_MAX_CONCURRENT_STREAMS, curl_max_concurrent_streams);
+#endif
 		}
 
-		proxy = Proxy;
+		proxy = newProxy;
+		cafile = newCafile;
+		capath = newCapath;
 
 		user_agent =
 			"PowderToy/" MTOS(SAVE_VERSION) "." MTOS(MINOR_VERSION) " ("

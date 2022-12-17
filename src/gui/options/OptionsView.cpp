@@ -2,12 +2,12 @@
 
 #include <cstdio>
 #include <cstring>
+#include <cmath>
 #include "SDLCompat.h"
 
 #include "OptionsController.h"
 #include "OptionsModel.h"
 
-#include "client/Client.h"
 #include "common/Platform.h"
 #include "graphics/Graphics.h"
 #include "gui/Style.h"
@@ -21,6 +21,7 @@
 #include "gui/interface/Engine.h"
 #include "gui/interface/Label.h"
 #include "gui/interface/Textbox.h"
+#include "gui/interface/DirectionSelector.h"
 
 OptionsView::OptionsView():
 	ui::Window(ui::Point(-1, -1), ui::Point(320, 340))
@@ -143,7 +144,78 @@ OptionsView::OptionsView():
 	gravityMode->AddOption(std::pair<String, int>("Vertical", 0));
 	gravityMode->AddOption(std::pair<String, int>("Off", 1));
 	gravityMode->AddOption(std::pair<String, int>("Radial", 2));
-	gravityMode->SetActionCallback({ [this] { c->SetGravityMode(gravityMode->GetOption().second); } });
+	gravityMode->AddOption(std::pair<String, int>("Custom", 3));
+
+	class GravityWindow : public ui::Window
+	{
+		void OnTryExit(ExitMethod method) override
+		{
+			CloseActiveWindow();
+			SelfDestruct();
+		}
+
+		void OnDraw() override
+		{
+			Graphics * g = GetGraphics();
+
+			g->clearrect(Position.X-2, Position.Y-2, Size.X+3, Size.Y+3);
+			g->drawrect(Position.X, Position.Y, Size.X, Size.Y, 200, 200, 200, 255);
+		}
+
+		ui::DirectionSelector * gravityDirection;
+		ui::Label * labelValues;
+
+		OptionsController * c;
+
+	public:
+		GravityWindow(ui::Point position, float scale, int radius, float x, float y, OptionsController * c_):
+			ui::Window(position, ui::Point((radius * 5 / 2) + 20, (radius * 5 / 2) + 75)),
+			gravityDirection(new ui::DirectionSelector(ui::Point(10, 32), scale, radius, radius / 4, 2, 5)),
+			c(c_)
+			{
+				ui::Label * tempLabel = new ui::Label(ui::Point(4, 1), ui::Point(Size.X - 8, 22), "Custom Gravity");
+				tempLabel->SetTextColour(style::Colour::InformationTitle);
+				tempLabel->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+				tempLabel->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
+				AddComponent(tempLabel);
+
+				Separator * tempSeparator = new Separator(ui::Point(0, 22), ui::Point(Size.X, 1));
+				AddComponent(tempSeparator);
+
+				labelValues = new ui::Label(ui::Point(0, (radius * 5 / 2) + 37), ui::Point(Size.X, 16), String::Build(Format::Precision(1), "X:", x, " Y:", y, " Total:", std::hypot(x, y)));
+				labelValues->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
+				labelValues->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
+				AddComponent(labelValues);
+
+				gravityDirection->SetValues(x, y);
+				gravityDirection->SetUpdateCallback([this](float x, float y) {
+					labelValues->SetText(String::Build(Format::Precision(1), "X:", x, " Y:", y, " Total:", std::hypot(x, y)));
+				});
+				gravityDirection->SetSnapPoints(5, 5, 2);
+				AddComponent(gravityDirection);
+
+				ui::Button * okayButton = new ui::Button(ui::Point(0, Size.Y - 17), ui::Point(Size.X, 17), "OK");
+				okayButton->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
+				okayButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
+				okayButton->Appearance.BorderInactive = ui::Colour(200, 200, 200);
+				okayButton->SetActionCallback({ [this] {
+					c->SetCustomGravityX(gravityDirection->GetXValue());
+					c->SetCustomGravityY(gravityDirection->GetYValue());
+					CloseActiveWindow();
+					SelfDestruct();
+				} });
+				AddComponent(okayButton);
+				SetOkayButton(okayButton);
+
+				MakeActiveWindow();
+			}
+	};
+
+	gravityMode->SetActionCallback({ [this] {
+		c->SetGravityMode(gravityMode->GetOption().second);
+		if (gravityMode->GetOption().second == 3)
+			new GravityWindow(ui::Point(-1, -1), 0.05f, 40, customGravityX, customGravityY, c);
+	} });
 
 	tempLabel = new ui::Label(ui::Point(8, currentY), ui::Point(Size.X-96, 16), "Gravity Simulation Mode");
 	tempLabel->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
@@ -334,7 +406,7 @@ OptionsView::OptionsView():
 		if (!cwd.empty())
 			Platform::OpenURI(cwd);
 		else
-			fprintf(stderr, "cannot open data folder: getcwd(...) failed\n");
+			fprintf(stderr, "cannot open data folder: Platform::GetCwd(...) failed\n");
 	} });
 	scrollPanel->AddChild(dataFolderButton);
 
@@ -415,7 +487,7 @@ void OptionsView::UpdateAirTemp(String temp, bool isDefocus)
 		ambientAirTemp->SetText(sb.Build());
 	}
 	// Out of range temperatures are invalid, preview should go away
-	else if (airTemp < MIN_TEMP || airTemp > MAX_TEMP)
+	else if (isValid && (airTemp < MIN_TEMP || airTemp > MAX_TEMP))
 		isValid = false;
 
 	// If valid, set temp
@@ -443,6 +515,8 @@ void OptionsView::NotifySettingsChanged(OptionsModel * sender)
 		ambientAirTemp->SetText(sb.Build());
 	}
 	gravityMode->SetOption(sender->GetGravityMode());
+	customGravityX = sender->GetCustomGravityX();
+	customGravityY = sender->GetCustomGravityY();
 	decoSpace->SetOption(sender->GetDecoSpace());
 	edgeMode->SetOption(sender->GetEdgeMode());
 	scale->SetOption(sender->GetScale());

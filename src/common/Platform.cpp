@@ -4,8 +4,8 @@
 #include <cstring>
 #include <cstdio>
 #include <cassert>
-#include <dirent.h>
 #include <fstream>
+#include <iostream>
 #include <sys/stat.h>
 
 #ifdef WIN
@@ -22,6 +22,7 @@
 # include <unistd.h>
 # include <ctime>
 # include <sys/time.h>
+# include <dirent.h>
 #endif
 #ifdef MACOSX
 # include <mach-o/dyld.h>
@@ -38,18 +39,28 @@ std::string sharedCwd;
 
 ByteString GetCwd()
 {
-	char *cwd = getcwd(NULL, 0);
-	return cwd == nullptr ? "" : cwd;
+	ByteString cwd;
+#if defined(WIN)
+	wchar_t *cwdPtr = _wgetcwd(NULL, 0);
+	if (cwdPtr)
+	{
+		cwd = WinNarrow(cwdPtr);
+	}
+	free(cwdPtr);
+#else
+	char *cwdPtr = getcwd(NULL, 0);
+	if (cwdPtr)
+	{
+		cwd = cwdPtr;
+	}
+	free(cwdPtr);
+#endif
+	return cwd;
 }
 
 ByteString ExecutableName()
 {
 	ByteString ret;
-#if defined(WIN)
-	using Char = wchar_t;
-#else
-	using Char = char;
-#endif
 #if defined(WIN)
 	wchar_t *name = (wchar_t *)malloc(sizeof(wchar_t) * 64);
 	DWORD max = 64, res;
@@ -81,6 +92,11 @@ ByteString ExecutableName()
 	{
 #endif
 #ifndef MACOSX
+#if defined(WIN)
+		using Char = wchar_t;
+#else
+		using Char = char;
+#endif
 		max *= 2;
 		Char* realloced_name = (Char *)realloc(name, sizeof(Char) * max);
 		assert(realloced_name != NULL);
@@ -264,13 +280,26 @@ bool DirectoryExists(ByteString directory)
 
 bool RemoveFile(ByteString filename)
 {
-	return std::remove(filename.c_str()) == 0;
+#ifdef WIN
+	return _wremove(WinWiden(filename).c_str()) == 0;
+#else
+	return remove(filename.c_str()) == 0;
+#endif
+}
+
+bool RenameFile(ByteString filename, ByteString newFilename)
+{
+#ifdef WIN
+	return _wrename(WinWiden(filename).c_str(), WinWiden(newFilename).c_str()) == 0;
+#else
+	return rename(filename.c_str(), newFilename.c_str()) == 0;
+#endif
 }
 
 bool DeleteDirectory(ByteString folder)
 {
 #ifdef WIN
-	return _rmdir(folder.c_str()) == 0;
+	return _wrmdir(WinWiden(folder).c_str()) == 0;
 #else
 	return rmdir(folder.c_str()) == 0;
 #endif
@@ -279,7 +308,7 @@ bool DeleteDirectory(ByteString folder)
 bool MakeDirectory(ByteString dir)
 {
 #ifdef WIN
-	return _mkdir(dir.c_str()) == 0;
+	return _wmkdir(WinWiden(dir).c_str()) == 0;
 #else
 	return mkdir(dir.c_str(), 0755) == 0;
 #endif
@@ -291,11 +320,10 @@ std::vector<ByteString> DirectorySearch(ByteString directory, ByteString search,
 {
 	//Get full file listing
 	//Normalise directory string, ensure / or \ is present
-	if (*directory.rbegin() != '/' && *directory.rbegin() != '\\')
+	if (!directory.size() || (directory.back() != '/' && directory.back() != '\\'))
 		directory += PATH_SEP;
 	std::vector<ByteString> directoryList;
-#if defined(WIN) && !defined(__GNUC__)
-	//Windows
+#ifdef WIN
 	struct _wfinddata_t currentFile;
 	intptr_t findFileHandle;
 	ByteString fileMatch = directory + "*.*";
@@ -306,14 +334,11 @@ std::vector<ByteString> DirectorySearch(ByteString directory, ByteString search,
 	}
 	do
 	{
-		ByteString currentFileName = Platform::WinNarrow(currentFile.name);
-		if (currentFileName.length() > 4)
-			directoryList.push_back(currentFileName);
+		directoryList.push_back(Platform::WinNarrow(currentFile.name));
 	}
 	while (_wfindnext(findFileHandle, &currentFile) == 0);
 	_findclose(findFileHandle);
 #else
-	//Linux or MinGW
 	struct dirent * directoryEntry;
 	DIR *directoryHandle = opendir(directory.c_str());
 	if (!directoryHandle)
@@ -322,9 +347,7 @@ std::vector<ByteString> DirectorySearch(ByteString directory, ByteString search,
 	}
 	while ((directoryEntry = readdir(directoryHandle)))
 	{
-		ByteString currentFileName = ByteString(directoryEntry->d_name);
-		if (currentFileName.length()>4)
-			directoryList.push_back(currentFileName);
+		directoryList.push_back(ByteString(directoryEntry->d_name));
 	}
 	closedir(directoryHandle);
 #endif
@@ -336,12 +359,12 @@ std::vector<ByteString> DirectorySearch(ByteString directory, ByteString search,
 	{
 		ByteString filename = *iter, tempfilename = *iter;
 		bool extensionMatch = !extensions.size();
-		for (std::vector<ByteString>::iterator extIter = extensions.begin(), extEnd = extensions.end(); extIter != extEnd; ++extIter)
+		for (auto &extension : extensions)
 		{
-			if (filename.EndsWith(*extIter))
+			if (filename.size() >= extension.size() && filename.EndsWith(extension))
 			{
 				extensionMatch = true;
-				tempfilename = filename.SubstrFromEnd(0, (*extIter).size()).ToLower();
+				tempfilename = filename.SubstrFromEnd(0, extension.size()).ToLower();
 				break;
 			}
 		}
@@ -373,7 +396,7 @@ String DoMigration(ByteString fromDir, ByteString toDir)
 	auto scripts = DirectorySearch(fromDir + "scripts", "", { ".lua", ".txt" });
 	auto downloadedScripts = DirectorySearch(fromDir + "scripts/downloaded", "", { ".lua" });
 	bool hasScriptinfo = FileExists(toDir + "scripts/downloaded/scriptinfo");
-	auto screenshots = DirectorySearch(fromDir, "powdertoy-", { ".png" });
+	auto screenshots = DirectorySearch(fromDir, "screenshot", { ".png" });
 	bool hasAutorun = FileExists(fromDir + "autorun.lua");
 	bool hasPref = FileExists(fromDir + "powder.pref");
 
@@ -523,5 +546,32 @@ std::wstring WinWiden(const ByteString &source)
 	return output;
 }
 #endif
+
+bool ReadFile(std::vector<char> &fileData, ByteString filename)
+{
+	std::ifstream f(filename, std::ios::binary);
+	if (f) f.seekg(0, std::ios::end);
+	if (f) fileData.resize(f.tellg());
+	if (f) f.seekg(0);
+	if (f) f.read(&fileData[0], fileData.size());
+	if (!f)
+	{
+		std::cerr << "ReadFile: " << filename << ": " << strerror(errno) << std::endl;
+		return false;
+	}
+	return true;
+}
+
+bool WriteFile(std::vector<char> fileData, ByteString filename)
+{
+	std::ofstream f(filename, std::ios::binary);
+	if (f) f.write(&fileData[0], fileData.size());
+	if (!f)
+	{
+		std::cerr << "WriteFile: " << filename << ": " << strerror(errno) << std::endl;
+		return false;
+	}
+	return true;
+}
 
 }
