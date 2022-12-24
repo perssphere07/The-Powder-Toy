@@ -2,8 +2,8 @@
 #include "Config.h"
 
 const char *const introTextData =
-	"\blThe Xphere's Mod " MTOS(MOD_MAJOR_VERSION) "." MTOS(MOD_MINOR_VERSION) ", " APPNAME "* " MTOS(SAVE_VERSION) "." MTOS(MINOR_VERSION) " - https://powdertoy.co.uk, irc.libera.chat #powder\n"
-	"                      \xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\xEE\x81\xA9\n"
+	"\blThe Xphere's Mod " MTOS(MOD_MAJOR_VERSION) "." MTOS(MOD_MINOR_VERSION) ", \bU" APPNAME "*\bU " MTOS(SAVE_VERSION) "." MTOS(MINOR_VERSION) " - https://powdertoy.co.uk, irc.libera.chat #powder\n"
+	"\n"
 	"\n"
 	"\bg[Ctrl] + [C]/[V]/[X] are Copy, Paste and cut respectively.\n"
 	"\bgTo choose a material, hover over one of the icons on the right, it will show a selection of elements in that group.\n"
@@ -38,17 +38,8 @@ const char *const introTextData =
 #elif MOD_ID > 0
 	" MODVER " MTOS(SNAPSHOT_ID)
 #endif
-#ifdef X86
-	" X86"
-#endif
-#ifdef X86_SSE
-	" X86_SSE"
-#endif
-#ifdef X86_SSE2
-	" X86_SSE2"
-#endif
-#ifdef X86_SSE3
-	" X86_SSE3"
+#if defined(X86_SSE) || defined(X86_SSE2) || defined(X86_SSE3)
+	" " IDENT_BUILD
 #endif
 #ifdef LUACONSOLE
 	" LUACONSOLE"
@@ -58,5 +49,14 @@ const char *const introTextData =
 #endif
 #ifdef REALISTIC
 	" REALISTIC"
+#endif
+#ifdef NOHTTP
+	" NOHTTP"
+#endif
+#ifdef DEBUG
+	" DEBUG"
+#endif
+#ifdef ENFORCE_HTTPS
+	" HTTPS"
 #endif
 	;
