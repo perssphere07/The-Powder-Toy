@@ -34,6 +34,11 @@ class ColourPickerActivity : public WindowActivity
 	ui::Textbox * aValue;
 	ui::Label * hexValue;
 
+	ui::Label * redLabel;
+	ui::Label * greenLabel;
+	ui::Label * blueLabel;
+	ui::Label * alphaLabel;
+
 	OnPicked onPicked;
 
 	void UpdateTextboxes(int r, int g, int b, int a);
