@@ -154,7 +154,7 @@ GameModel::GameModel():
 
 	mouseClickRequired = Client::Ref().GetPrefBool("MouseClickRequired", false);
 	includePressure = Client::Ref().GetPrefBool("Simulation.IncludePressure", true);
-	celsiusUnit = Client::Ref().GetPrefBool("CelsiusUnit", true);
+	temperatureScale = Client::Ref().GetPrefInteger("Renderer.TemperatureScale", 1);
 
 	ClearSimulation();
 }
@@ -532,6 +532,11 @@ void GameModel::SetEdgeMode(int edgeMode)
 int GameModel::GetEdgeMode()
 {
 	return this->edgeMode;
+}
+
+void GameModel::SetTemperatureScale(int temperatureScale)
+{
+	this->temperatureScale = temperatureScale;
 }
 
 void GameModel::SetAmbientAirTemperature(float ambientAirTemp)
@@ -1643,11 +1648,6 @@ void GameModel::SetPerfectCircle(bool perfectCircle)
 		this->perfectCircle = perfectCircle;
 		BuildBrushList();
 	}
-}
-
-void GameModel::SetCelsiusUnit(bool celsiusUnit)
-{
-	this->celsiusUnit = celsiusUnit;
 }
 
 bool GameModel::RemoveCustomGOLType(const ByteString &identifier)

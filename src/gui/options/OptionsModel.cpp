@@ -90,6 +90,17 @@ void OptionsModel::SetEdgeMode(int edgeMode)
 	notifySettingsChanged();
 }
 
+int OptionsModel::GetTemperatureScale()
+{
+	return gModel->GetTemperatureScale();
+}
+void OptionsModel::SetTemperatureScale(int temperatureScale)
+{
+	Client::Ref().SetPref("Renderer.TemperatureScale", temperatureScale);
+	gModel->SetTemperatureScale(temperatureScale);
+	notifySettingsChanged();
+}
+
 float OptionsModel::GetAmbientAirTemperature()
 {
 	return gModel->GetSimulation()->air->ambientAirTemp;
@@ -259,18 +270,6 @@ void OptionsModel::SetPerfectCircle(bool perfectCircle)
 {
 	Client::Ref().SetPref("PerfectCircleBrush", perfectCircle);
 	gModel->SetPerfectCircle(perfectCircle);
-	notifySettingsChanged();
-}
-
-bool OptionsModel::GetCelsiusUnit()
-{
-	return gModel->GetCelsiusUnit();
-}
-
-void OptionsModel::SetCelsiusUnit(bool celsiusUnit)
-{
-	Client::Ref().SetPref("CelsiusUnit", celsiusUnit);
-	gModel->SetCelsiusUnit(celsiusUnit);
 	notifySettingsChanged();
 }
 

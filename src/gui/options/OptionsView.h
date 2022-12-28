@@ -27,6 +27,7 @@ class OptionsView: public ui::Window
 	ui::Button * ambientAirTempPreview;
 	ui::DropDown * gravityMode;
 	ui::DropDown * edgeMode;
+	ui::DropDown * temperatureScale;
 	ui::DropDown * scale;
 	ui::Checkbox * resizable;
 	ui::Checkbox * fullscreen;
@@ -39,11 +40,10 @@ class OptionsView: public ui::Window
 	ui::Checkbox * mouseClickRequired;
 	ui::Checkbox * includePressure;
 	ui::Checkbox * perfectCirclePressure;
-	ui::Checkbox * celsiusUnit;
 	ui::ScrollPanel * scrollPanel;
 	float customGravityX, customGravityY;
-	bool initializedAirTempPreview = false;
 	void UpdateAmbientAirTempPreview(float airTemp, bool isValid);
+	void AmbientAirTempToTextBox(float airTemp);
 	void UpdateAirTemp(String temp, bool isDefocus);
 public:
 	OptionsView();

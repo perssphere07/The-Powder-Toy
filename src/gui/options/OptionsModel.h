@@ -32,6 +32,8 @@ public:
 	void SetAmbientAirTemperature(float ambientAirTemp);
 	int GetEdgeMode();
 	void SetEdgeMode(int edgeMode);
+	int GetTemperatureScale();
+	void SetTemperatureScale(int temperatureScale);
 	int GetGravityMode();
 	void SetGravityMode(int gravityMode);
 	float GetCustomGravityX();
@@ -58,8 +60,6 @@ public:
 	void SetIncludePressure(bool includePressure);
 	bool GetPerfectCircle();
 	void SetPerfectCircle(bool perfectCircle);
-	bool GetCelsiusUnit();
-	void SetCelsiusUnit(bool celsiusUnit);
 	bool GetMomentumScroll();
 	void SetMomentumScroll(bool momentumScroll);
 	virtual ~OptionsModel();

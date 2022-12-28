@@ -67,6 +67,11 @@ void OptionsController::SetEdgeMode(int edgeMode)
 	model->SetEdgeMode(edgeMode);
 }
 
+void OptionsController::SetTemperatureScale(int temperatureScale)
+{
+	model->SetTemperatureScale(temperatureScale);
+}
+
 void OptionsController::SetFullscreen(bool fullscreen)
 {
 	model->SetFullscreen(fullscreen);
@@ -125,11 +130,6 @@ void OptionsController::SetIncludePressure(bool includePressure)
 void OptionsController::SetPerfectCircle(bool perfectCircle)
 {
 	model->SetPerfectCircle(perfectCircle);
-}
-
-void OptionsController::SetCelsiusUnit(bool celsiusUnit)
-{
-	model->SetCelsiusUnit(celsiusUnit);
 }
 
 void OptionsController::SetMomentumScroll(bool momentumScroll)

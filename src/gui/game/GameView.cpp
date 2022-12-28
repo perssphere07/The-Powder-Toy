@@ -444,7 +444,6 @@ GameView::GameView():
 	upVoteButton->Appearance.Margin.Top += 4;
 	upVoteButton->Appearance.Margin.Left += 1;
 	currentX+=16;
-	upVoteButton->SetActionCallback({ [this] { c->Vote(1); } });
 	AddComponent(upVoteButton);
 
 	downVoteButton = new ui::Button(ui::Point(currentX, Size.Y-18), ui::Point(17, 17), "", "Dislike this save");
@@ -452,7 +451,6 @@ GameView::GameView():
 	downVoteButton->Appearance.Margin.Top += 4;
 	downVoteButton->Appearance.Margin.Left += 1;
 	currentX+=18;
-	downVoteButton->SetActionCallback({ [this] { c->Vote(-1); } });
 	AddComponent(downVoteButton);
 
 	reloadButton = new ui::Button(ui::Point(currentX, Size.Y-18), ui::Point(17, 17), "", "Reload the simulation");
@@ -982,17 +980,29 @@ void GameView::NotifySaveChanged(GameModel * sender)
 		else
 			saveUploadSimulationButton->SetShowSplit(false);
 		reloadButton->Enabled = true;
-		upVoteButton->Enabled = (sender->GetSave()->GetID() && sender->GetUser().UserID && sender->GetSave()->GetVote()==0);
+		upVoteButton->Enabled = sender->GetSave()->GetID() && sender->GetUser().UserID && sender->GetUser().Username != sender->GetSave()->GetUserName();
 		if(sender->GetSave()->GetID() && sender->GetUser().UserID && sender->GetSave()->GetVote()==1)
-			upVoteButton->Appearance.BackgroundDisabled = (ui::Colour(0, 108, 10, 255));
+		{
+			upVoteButton->Appearance.BackgroundHover = (ui::Colour(20, 128, 30, 255));
+			upVoteButton->Appearance.BackgroundInactive = (ui::Colour(0, 108, 10, 255));
+		}
 		else
-			upVoteButton->Appearance.BackgroundDisabled = (ui::Colour(0, 0, 0));
+		{
+			upVoteButton->Appearance.BackgroundHover = (ui::Colour(20, 20, 20));
+			upVoteButton->Appearance.BackgroundInactive = (ui::Colour(0, 0, 0));
+		}
 
 		downVoteButton->Enabled = upVoteButton->Enabled;
 		if (sender->GetSave()->GetID() && sender->GetUser().UserID && sender->GetSave()->GetVote()==-1)
-			downVoteButton->Appearance.BackgroundDisabled = (ui::Colour(108, 0, 10, 255));
+		{
+			downVoteButton->Appearance.BackgroundHover = (ui::Colour(128, 20, 30, 255));
+			downVoteButton->Appearance.BackgroundInactive = (ui::Colour(108, 0, 10, 255));
+		}
 		else
-			downVoteButton->Appearance.BackgroundDisabled = (ui::Colour(0, 0, 0));
+		{
+			downVoteButton->Appearance.BackgroundHover = (ui::Colour(20, 20, 20));
+			downVoteButton->Appearance.BackgroundInactive = (ui::Colour(0, 0, 0));
+		}
 
 		if (sender->GetUser().UserID)
 		{
@@ -1004,6 +1014,16 @@ void GameView::NotifySaveChanged(GameModel * sender)
 			upVoteButton->Appearance.BorderDisabled = ui::Colour(100, 100, 100);
 			downVoteButton->Appearance.BorderDisabled = ui::Colour(100, 100, 100);
 		}
+
+		if (sender->GetSave()->GetVote() == 1)
+			upVoteButton->SetActionCallback({ [this] { c->Vote(0); } });
+		else
+			upVoteButton->SetActionCallback({ [this] { c->Vote(1); } });
+
+		if (sender->GetSave()->GetVote() == -1)
+			downVoteButton->SetActionCallback({ [this] { c->Vote(0) ;} });
+		else
+			downVoteButton->SetActionCallback({ [this] { c->Vote(-1) ;} });
 
 		tagSimulationButton->Enabled = sender->GetSave()->GetID();
 		if (sender->GetSave()->GetID())
@@ -2406,11 +2426,12 @@ void GameView::OnDraw()
 	else if(showHud)
 	{
 		//Draw info about simulation under cursor
-		int wavelengthGfx = 0, alpha = 255;
+		int wavelengthGfx = 0;
+		int alpha = 255-introText*5;
 		if (toolTipPosition.Y < 120)
-			alpha = 255-toolTipPresence*3;
-		if (alpha < 50)
-			alpha = 50;
+			alpha -= toolTipPresence*3;
+		if (alpha < 0)
+			alpha = 0;
 		StringBuilder sampleInfo;
 		sampleInfo << Format::Precision(2);
 
@@ -2469,10 +2490,8 @@ void GameView::OnDraw()
 					else if (ctype)
 						sampleInfo << " (" << ctype << ")";
 				}
-				if (c->GetCelsiusUnit())
-					sampleInfo << ", Temp: " << sample.particle.temp - 273.15f << " \xE2\x84\x83";
-				else
-					sampleInfo << ", Temp: " << sample.particle.temp << " \xE2\x84\xAA";
+				sampleInfo << ", Temp: ";
+				format::RenderTemperature(sampleInfo, sample.particle.temp, c->GetTemperatureScale());
 				sampleInfo << ", Life: " << sample.particle.life;
 				if (sample.particle.type != PT_RFRG && sample.particle.type != PT_RFGL && sample.particle.type != PT_LIFE)
 				{
@@ -2502,10 +2521,8 @@ void GameView::OnDraw()
 			else
 			{
 				sampleInfo << c->BasicParticleInfo(sample.particle);
-				if (c->GetCelsiusUnit())
-					sampleInfo << ", Temp: " << sample.particle.temp - 273.15f << " \xE2\x84\x83";
-				else
-					sampleInfo << ", Temp: " << sample.particle.temp << " \xE2\x84\xAA";
+				sampleInfo << ", Temp: ";
+				format::RenderTemperature(sampleInfo, sample.particle.temp, c->GetTemperatureScale());
 				sampleInfo << ", Pressure: " << sample.AirPressure;
 			}
 		}
@@ -2574,12 +2591,11 @@ void GameView::OnDraw()
 
 			if (sample.Gravity)
 				sampleInfo << ", GX: " << sample.GravityVelocityX << " GY: " << sample.GravityVelocityY;
-			
-			if (c->GetAHeatEnable()) {
-				if (c->GetCelsiusUnit())
-					sampleInfo << ", AHeat: " << sample.AirTemperature - 273.15f << " \xE2\x84\x83";
-				else
-					sampleInfo << ", AHeat: " << sample.AirTemperature << " \xE2\x84\xAA";
+
+			if (c->GetAHeatEnable())
+			{
+				sampleInfo << ", AHeat: ";
+				format::RenderTemperature(sampleInfo, sample.AirTemperature, c->GetTemperatureScale());
 			}
 
 			textWidth = Graphics::textwidth(sampleInfo.Build());
@@ -2640,7 +2656,7 @@ void GameView::OnDraw()
 	if(introText && showHud)
 	{
 		g->fillrect(0, 0, WINDOWW, WINDOWH, 0, 0, 0, introText>51?102:introText*2);
-		g->drawtext(16, 20, introTextMessage, 255, 255, 255, introText>51?255:introText*5);
+		g->drawtext(16, 16, introTextMessage, 255, 255, 255, introText>51?255:introText*5);
 	}
 
 	// Clear menu areas, to ensure particle graphics don't overlap
