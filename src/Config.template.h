@@ -51,8 +51,8 @@
 #define BUILD_NUM 352
 #mesondefine SNAPSHOT_ID
 #mesondefine MOD_ID
-#define MOD_MAJOR_VERSION 1
-#define MOD_MINOR_VERSION 4
+#define MOD_MAJOR_VERSION 2
+#define MOD_MINOR_VERSION 0
 #define FUTURE_SAVE_VERSION 97
 #define FUTURE_MINOR_VERSION 0
 
