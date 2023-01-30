@@ -1,15 +1,14 @@
 #include "ProfileActivity.h"
-
 #include "client/Client.h"
-#include "common/Platform.h"
+#include "common/platform/Platform.h"
 #include "gui/Style.h"
-
 #include "gui/interface/AvatarButton.h"
 #include "gui/interface/Button.h"
 #include "gui/dialogues/ErrorMessage.h"
 #include "gui/interface/Label.h"
 #include "gui/interface/ScrollPanel.h"
 #include "gui/interface/Textbox.h"
+#include "Config.h"
 
 ProfileActivity::ProfileActivity(ByteString username) :
 	WindowActivity(ui::Point(-1, -1), ui::Point(236, 300)),
@@ -37,8 +36,8 @@ ProfileActivity::ProfileActivity(ByteString username) :
 				saving = true;
 				info.location = location->GetText();
 				info.biography = bio->GetText();
-				SaveUserInfoRequestMonitor::RequestSetup(info);
-				SaveUserInfoRequestMonitor::RequestStart();
+				saveUserInfoRequest = std::make_unique<http::SaveUserInfoRequest>(info);
+				saveUserInfoRequest->Start();
 			}
 		} });
 		AddComponent(saveButton);
@@ -48,8 +47,8 @@ ProfileActivity::ProfileActivity(ByteString username) :
 
 	loading = true;
 
-	GetUserInfoRequestMonitor::RequestSetup(username);
-	GetUserInfoRequestMonitor::RequestStart();
+	getUserInfoRequest = std::make_unique<http::GetUserInfoRequest>(username);
+	getUserInfoRequest->Start();
 }
 
 void ProfileActivity::setUserInfo(UserInfo newInfo)
@@ -82,7 +81,7 @@ void ProfileActivity::setUserInfo(UserInfo newInfo)
 	{
 		ui::Button * editAvatar = new ui::Button(ui::Point(Size.X - (40 + 16 + 75), currentY), ui::Point(75, 15), "Edit Avatar");
 		editAvatar->SetActionCallback({ [] {
-			Platform::OpenURI(SCHEME SERVER "/Profile/Avatar.html");
+			Platform::OpenURI(ByteString::Build(SCHEME, SERVER, "/Profile/Avatar.html"));
 		} });
 		scrollPanel->AddChild(editAvatar);
 	}
@@ -191,33 +190,6 @@ void ProfileActivity::setUserInfo(UserInfo newInfo)
 	scrollPanel->InnerSize = ui::Point(Size.X, currentY);
 }
 
-void ProfileActivity::OnResponse(bool SaveUserInfoStatus)
-{
-	if (SaveUserInfoStatus)
-	{
-		Exit();
-	}
-	else
-	{
-		doError = true;
-		doErrorMessage = "Could not save user info: " + Client::Ref().GetLastError();
-	}
-}
-
-void ProfileActivity::OnResponse(std::unique_ptr<UserInfo> getUserInfoResult)
-{
-	if (getUserInfoResult)
-	{
-		loading = false;
-		setUserInfo(*getUserInfoResult);
-	}
-	else
-	{
-		doError = true;
-		doErrorMessage = "Could not load user info: " + Client::Ref().GetLastError();
-	}
-}
-
 void ProfileActivity::OnTick(float dt)
 {
 	if (doError)
@@ -226,8 +198,35 @@ void ProfileActivity::OnTick(float dt)
 		Exit();
 	}
 
-	SaveUserInfoRequestMonitor::RequestPoll();
-	GetUserInfoRequestMonitor::RequestPoll();
+	if (saveUserInfoRequest && saveUserInfoRequest->CheckDone())
+	{
+		auto SaveUserInfoStatus = saveUserInfoRequest->Finish();
+		if (SaveUserInfoStatus)
+		{
+			Exit();
+		}
+		else
+		{
+			doError = true;
+			doErrorMessage = "Could not save user info: " + Client::Ref().GetLastError();
+		}
+		saveUserInfoRequest.reset();
+	}
+	if (getUserInfoRequest && getUserInfoRequest->CheckDone())
+	{
+		auto getUserInfoResult = getUserInfoRequest->Finish();
+		if (getUserInfoResult)
+		{
+			loading = false;
+			setUserInfo(*getUserInfoResult);
+		}
+		else
+		{
+			doError = true;
+			doErrorMessage = "Could not load user info: " + Client::Ref().GetLastError();
+		}
+		getUserInfoRequest.reset();
+	}
 }
 
 void ProfileActivity::OnDraw()

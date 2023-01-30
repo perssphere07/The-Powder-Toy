@@ -1,6 +1,4 @@
-#ifndef LOGINVIEW_H_
-#define LOGINVIEW_H_
-
+#pragma once
 #include "gui/interface/Window.h"
 
 namespace ui
@@ -34,5 +32,3 @@ public:
 	void OnTick(float dt) override;
 	virtual ~LoginView();
 };
-
-#endif /* LOGINVIEW_H_ */

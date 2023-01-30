@@ -1,10 +1,6 @@
-#ifndef LOGINCONTROLLER_H_
-#define LOGINCONTROLLER_H_
-#include "Config.h"
-
+#pragma once
 #include "common/String.h"
 #include "client/User.h"
-
 #include <functional>
 
 class LoginView;
@@ -24,5 +20,3 @@ public:
 	User GetUser();
 	virtual ~LoginController();
 };
-
-#endif /* LOGINCONTROLLER_H_ */

@@ -1,19 +1,13 @@
 #include "OptionsView.h"
-
-#include <cstdio>
-#include <cstring>
-#include <cmath>
-#include "SDLCompat.h"
 #include "Format.h"
-
 #include "OptionsController.h"
 #include "OptionsModel.h"
-
-#include "common/Platform.h"
+#include "common/platform/Platform.h"
 #include "graphics/Graphics.h"
+#include "graphics/Renderer.h"
 #include "gui/Style.h"
 #include "simulation/ElementDefs.h"
-
+#include "client/Client.h"
 #include "gui/dialogues/ConfirmPrompt.h"
 #include "gui/dialogues/InformationMessage.h"
 #include "gui/interface/Button.h"
@@ -23,6 +17,10 @@
 #include "gui/interface/Label.h"
 #include "gui/interface/Textbox.h"
 #include "gui/interface/DirectionSelector.h"
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+#include <SDL.h>
 
 OptionsView::OptionsView():
 	ui::Window(ui::Point(-1, -1), ui::Point(320, 340))
@@ -419,7 +417,7 @@ OptionsView::OptionsView():
 		ByteString to = Platform::sharedCwd;
 		new ConfirmPrompt("Do Migration?", "This will migrate all stamps, saves, and scripts from\n\bt" + from.FromUtf8() + "\bw\nto the shared data directory at\n\bt" + to.FromUtf8() + "\bw\n\n" +
 			 "Files that already exist will not be overwritten.", { [=] () {
-				 String ret = Platform::DoMigration(from, to);
+				 String ret = Client::Ref().DoMigration(from, to);
 				new InformationMessage("Migration Complete", ret, false);
 			 } });
 	} });
@@ -438,7 +436,6 @@ void OptionsView::UpdateAmbientAirTempPreview(float airTemp, bool isValid)
 {
 	if (isValid)
 	{
-		int HeatToColour(float temp);
 		int c = HeatToColour(airTemp);
 		ambientAirTempPreview->Appearance.BackgroundInactive = ui::Colour(PIXR(c), PIXG(c), PIXB(c));
 		ambientAirTempPreview->SetText("");

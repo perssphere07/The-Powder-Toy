@@ -7,12 +7,13 @@
 #include "gui/interface/Button.h"
 #include "gui/interface/Label.h"
 #include "gui/interface/Textbox.h"
-#include "gui/interface/Keys.h"
 #include "gui/Style.h"
 
 #include "client/Client.h"
 
 #include "Misc.h"
+
+#include <SDL.h>
 
 LoginView::LoginView():
 	ui::Window(ui::Point(-1, -1), ui::Point(256, 128)),
@@ -22,8 +23,8 @@ LoginView::LoginView():
 	titleLabel(new ui::Label(ui::Point(8, 6), ui::Point(256-16, 16), "Sign in")),
 	createAccountLabel(new ui::Label(ui::Point(29, 74), ui::Point(128, 16), "No account?")),
 	infoLabel(new ui::Label(ui::Point(8, 67), ui::Point(256-16, 16), "")),
-	usernameField(new ui::Textbox(ui::Point(32, 30), ui::Point(192, 17), Client::Ref().GetAuthUser().Username.FromUtf8(), " Username")),
-	passwordField(new ui::Textbox(ui::Point(32, 56), ui::Point(192, 17), "", " Password")),
+	usernameField(new ui::Textbox(ui::Point(32, 30), ui::Point(192, 17), Client::Ref().GetAuthUser().Username.FromUtf8(), "Username")),
+	passwordField(new ui::Textbox(ui::Point(32, 56), ui::Point(192, 17), "", "Password")),
 	targetSize(0, 0)
 {
 	targetSize = Size;

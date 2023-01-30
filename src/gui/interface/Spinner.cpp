@@ -1,11 +1,10 @@
 #include "Spinner.h"
-
+#include "graphics/Graphics.h"
 #include <cmath>
 
-#include "graphics/Graphics.h"
-#include "src/common/tpt-compat.h"
-
 using namespace ui;
+
+const double PI = std::acos(-1);
 
 Spinner::Spinner(Point position, Point size):
 	Component(position, size), cValue(0),
@@ -37,21 +36,21 @@ void Spinner::Draw(const Point& screenPos) {
 
 	for (double i = 0; i < 360; i = i + 0.5) {
 		for (double j = ringSize; j >= ringSize - ringWidth + 1; j = j - 0.5) {
-			g->blendpixel((int)(baseX+cos((i-90)*M_PI/180)*j), (int)(baseY+sin((i-90)*M_PI/180)*j), 63, 63, 63, 255);
+			g->blendpixel((int)(baseX+cos((i-90)*PI/180)*j), (int)(baseY+sin((i-90)*PI/180)*j), 63, 63, 63, 255);
 		}
 	}
 
 	for (double i = startAngle; i <= endAngle; i = i + 0.5) {
 		for (double j = ringSize; j >= ringSize - ringWidth + 1; j = j - 0.5) {
-			g->blendpixel((int)(baseX+cos((i-90)*M_PI/180)*j), (int)(baseY+sin((i-90)*M_PI/180)*j), 0, 192, 255, 255);
+			g->blendpixel((int)(baseX+cos((i-90)*PI/180)*j), (int)(baseY+sin((i-90)*PI/180)*j), 0, 192, 255, 255);
 		}
 	}
-	g->fillcircle((int)(baseX+cos((startAngle-90)*M_PI/180)*(ringSize-ringWidth/2)), (int)(baseY+sin((startAngle-90)*M_PI/180)*(ringSize-ringWidth/2)), ringWidth/2, ringWidth/2, 0, 192, 255, 255);
-	g->fillcircle((int)(baseX+cos((endAngle-90)*M_PI/180)*(ringSize-ringWidth/2)), (int)(baseY+sin((endAngle-90)*M_PI/180)*(ringSize-ringWidth/2)), ringWidth/2, ringWidth/2, 0, 192, 255, 255);
+	g->fillcircle((int)(baseX+cos((startAngle-90)*PI/180)*(ringSize-ringWidth/2)), (int)(baseY+sin((startAngle-90)*PI/180)*(ringSize-ringWidth/2)), ringWidth/2, ringWidth/2, 0, 192, 255, 255);
+	g->fillcircle((int)(baseX+cos((endAngle-90)*PI/180)*(ringSize-ringWidth/2)), (int)(baseY+sin((endAngle-90)*PI/180)*(ringSize-ringWidth/2)), ringWidth/2, ringWidth/2, 0, 192, 255, 255);
 
 	for (double i = 0; i < 360; i = i + 0.5) {
-		if ((baseX+cos((i-90)*M_PI/180)*12) < baseX+12 && baseY+sin((i-90)*M_PI/180)*12 < baseY+12)
-			g->blendpixel((int)(baseX+cos((i-90)*M_PI/180)*12), (int)(baseY+sin((i-90)*M_PI/180)*12), 0, 0, 0, 255);
+		if ((baseX+cos((i-90)*PI/180)*12) < baseX+12 && baseY+sin((i-90)*PI/180)*12 < baseY+12)
+			g->blendpixel((int)(baseX+cos((i-90)*PI/180)*12), (int)(baseY+sin((i-90)*PI/180)*12), 0, 0, 0, 255);
 	}
 	g->drawrect(baseX-17, baseY-17, 34, 34, 0, 0, 0, 255);
 }

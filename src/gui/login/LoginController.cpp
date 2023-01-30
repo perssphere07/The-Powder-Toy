@@ -1,10 +1,11 @@
 #include "LoginController.h"
 
 #include "client/Client.h"
-#include "common/Platform.h"
+#include "common/platform/Platform.h"
 
 #include "LoginView.h"
 #include "LoginModel.h"
+#include "Config.h"
 #include "Controller.h"
 
 LoginController::LoginController(std::function<void ()> onDone_):
