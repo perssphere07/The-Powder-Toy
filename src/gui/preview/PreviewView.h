@@ -1,8 +1,9 @@
 #pragma once
+#include <memory>
+#include <set>
+#include <vector>
 #include "common/String.h"
 #include "gui/interface/Window.h"
-#include <vector>
-#include <set>
 
 namespace ui
 {
@@ -20,7 +21,7 @@ class PreviewController;
 class PreviewView: public ui::Window
 {
 	PreviewController * c;
-	VideoBuffer * savePreview;
+	std::unique_ptr<VideoBuffer> savePreview;
 	ui::Button * openButton;
 	ui::Button * browserOpenButton;
 	ui::Button * favButton;
@@ -65,7 +66,7 @@ class PreviewView: public ui::Window
 	void CheckComment();
 public:
 	void AttachController(PreviewController * controller);
-	PreviewView();
+	PreviewView(std::unique_ptr<VideoBuffer> newSavePreviev);
 	void NotifySaveChanged(PreviewModel * sender);
 	void NotifyCommentsChanged(PreviewModel * sender);
 	void NotifyCommentsPageChanged(PreviewModel * sender);

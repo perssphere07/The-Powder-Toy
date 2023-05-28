@@ -5,7 +5,7 @@
 inline ByteString IntroText()
 {
 	ByteStringBuilder sb;
-	sb << "\blThe Xphere's Mod " << MOD_MAJOR_VERSION << "." << MOD_MINOR_VERSION << ", \bU" << APPNAME << "*\bU " << SAVE_VERSION << "." << MINOR_VERSION << " - https://powdertoy.co.uk, irc.libera.chat #powder, https://tpt.io/discord\n"
+	sb << "\blPerssphere's Mod " << MOD_MAJOR_VERSION << "." << MOD_MINOR_VERSION << ", \bU" << APPNAME << "*\bU " << SAVE_VERSION << "." << MINOR_VERSION << " - https://powdertoy.co.uk, irc.libera.chat #powder, https://tpt.io/discord\n"
 	      "\n"
 	      "\n"
 	      "\bgControl+C/V/X are Copy, Paste and cut respectively.\n"
@@ -25,9 +25,9 @@ inline ByteString IntroText()
 	      "Use 'H' to toggle the HUD. Use 'D' to toggle debug mode in the HUD.\n"
 	      "\n"
 	      "Contributors: \bgStanislaw K Skowronek (Designed the original Powder Toy),\n"
-	      "\bgSimon Robertshaw, Skresanov Savely, cracker64, Catelite, Bryan Hoyle, Nathan Cousins, jacksonmj,\n"
+	      "\bgSimon Robertshaw, Skresanov Savely, cracker64, Catelite, Victoria Hoyle, Nathan Cousins, jacksonmj,\n"
 	      "\bgFelix Wallin, Lieuwe Mosch, Anthony Boot, Me4502, MaksProg, jacob1, mniip, LBPHacker\n"
-	      "\boModder: \bgThe Xphere\n"
+	      "\boModder: \bgPerssphere\n"
 	      "\n";
 	if constexpr (BETA)
 	{

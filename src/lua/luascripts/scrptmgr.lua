@@ -34,26 +34,26 @@
 --  The link at top downloads a file that contains ONLY version,full link,and prints the rest(changelog). See my link for example
 
 local icons = {
-	["manager"] = "\xEE\x80\x83",
-	["cancel"] = "\xEE\x9C\x91",
-	["filter"] = "\xEE\x9C\x9C",
-	["search"] = "\xEE\x9C\xA1",
-	["back"] = "\xEE\x9C\xAB",
-	["refresh"] = "\xEE\x9C\xAC",
-	["checkbox"] = "\xEE\x9C\xB9",
+	["manager"]           = "\xEE\x84\x8F",
+	["cancel"]            = "\xEE\x9C\x91",
+	["filter"]            = "\xEE\x9C\x9C",
+	["search"]            = "\xEE\x9C\xA1",
+	["back"]              = "\xEE\x9C\xAB",
+	["refresh"]           = "\xEE\x9C\xAC",
+	["checkbox"]          = "\xEE\x9C\xB9",
 	["checkboxcomposite"] = "\xEE\x9C\xBA",
-	["checkboxfill"] = "\xEE\x9C\xBB",
-	["delete"] = "\xEE\x9D\x8D",
-	["globe"] = "\xEE\x9D\xB4",
-	["restart"] = "\xEE\x9D\xB7",
-	["clear"] = "\xEE\xA2\x94",
-	["sync"] = "\xEE\xA2\x95",
-	["download"] = "\xEE\xA2\x96",
-	["upload"] = "\xEE\xA2\x98",
-	["openinnewwindow"] = "\xEE\xA2\xA7",
-	["accept"] = "\xEE\xA3\xBB",
-	["fileexplorer"] = "\xEE\xB1\x90",
-	["harddrive"] = "\xEE\xB6\xA2"
+	["checkboxfill"]      = "\xEE\x9C\xBB",
+	["delete"]            = "\xEE\x9D\x8D",
+	["globe"]             = "\xEE\x9D\xB4",
+	["restart"]           = "\xEE\x9D\xB7",
+	["clear"]             = "\xEE\xA2\x94",
+	["sync"]              = "\xEE\xA2\x95",
+	["download"]          = "\xEE\xA2\x96",
+	["upload"]            = "\xEE\xA2\x98",
+	["openinnewwindow"]   = "\xEE\xA2\xA7",
+	["accept"]            = "\xEE\xA3\xBB",
+	["fileexplorer"]      = "\xEE\xB1\x90",
+	["harddrive"]         = "\xEE\xB6\xA2"
 }
 
 if not socket then error("TPT version not supported") end

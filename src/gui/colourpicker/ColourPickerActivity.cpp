@@ -256,12 +256,10 @@ void ColourPickerActivity::OnDraw()
 	int currentBlue = 0;
 	HSV_to_RGB(currentHue, currentSaturation, currentValue, &currentRed, &currentGreen, &currentBlue);
 
-	//g->clearrect(Position.X-2, Position.Y-2, Size.X+3, Size.Y+3);
-	g->fillrect(Position.X-2, Position.Y-2, Size.X+3, Size.Y+3, 0, 0, 0, currentAlpha);
-	g->drawrect(Position.X, Position.Y, Size.X, Size.Y, 255, 255, 255, 255);
+	g->BlendFilledRect(RectSized(Position - Vec2{ 2, 2 }, Size + Vec2{ 3, 3 }), 0x000000_rgb .WithAlpha(currentAlpha));
+	g->DrawRect(RectSized(Position, Size), 0xFFFFFF_rgb);
 
-	int offsetX = Position.X + 11;
-	int offsetY = Position.Y + 11;
+	auto offset = Position + Vec2{ 11, 11 };
 
 	//draw color square
 	int lastx = -1, currx = 0;
@@ -269,7 +267,7 @@ void ColourPickerActivity::OnDraw()
 	{
 		for (int hue = 0; hue <= 359; hue += 2)
 		{
-			currx = offsetX + (int)(hue / 359.0f * 180.0f);
+			currx = offset.X + (int)(hue / 359.0f * 180.0f);
 			if (currx == lastx)
 				continue;
 			lastx = currx;
@@ -277,20 +275,20 @@ void ColourPickerActivity::OnDraw()
 			int cg = 0;
 			int cb = 0;
 			HSV_to_RGB(hue, 255 - saturation, currentValue, &cr, &cg, &cb);
-			g->blendpixel(currx, offsetY + (int)(saturation / 255.0f * 180.0f), cr, cg, cb, currentAlpha);
+			g->BlendPixel({ currx, offset.Y + (int)(saturation / 255.0f * 180.0f) }, RGBA<uint8_t>(cr, cg, cb, currentAlpha));
 		}
 	}
-	g->drawrect(offsetX, offsetY, 180, 180, 255, 255, 255, 31);
+	g->BlendRect(RectSized(offset, Vec2{ 180, 180 }), 0xFFFFFF_rgb .WithAlpha(31));
 
-	g->fillrect(offsetX + 190, offsetY, 30, 206, currentRed, currentGreen, currentBlue, currentAlpha);
-	g->drawrect(offsetX + 190, offsetY, 30, 206, 255, 255, 255, 31);
+	g->BlendFilledRect(RectSized(offset + Vec2{ 190, 0 }, Vec2{ 30, 206 }), RGBA<uint8_t>(currentRed, currentGreen, currentBlue, currentAlpha));
+	g->BlendRect(RectSized(offset + Vec2{ 190, 0 }, Vec2{ 30, 206 }), 0xFFFFFF_rgb .WithAlpha(31));
 
 	//draw color square pointer
 	int currentHueX = (int)(currentHue / 359.0f * 180.f);
 	int currentSaturationY = (int)((255 - currentSaturation) / 255.0f * 180.f);
-	g->xor_line(offsetX+currentHueX, offsetY+currentSaturationY-5, offsetX+currentHueX, offsetY+currentSaturationY-1);
-	g->xor_line(offsetX+currentHueX, offsetY+currentSaturationY+1, offsetX+currentHueX, offsetY+currentSaturationY+5);
-	g->xor_line(offsetX+currentHueX-5, offsetY+currentSaturationY, offsetX+currentHueX-1, offsetY+currentSaturationY);
-	g->xor_line(offsetX+currentHueX+1, offsetY+currentSaturationY, offsetX+currentHueX+5, offsetY+currentSaturationY);
+	g->XorLine(offset + Vec2{ currentHueX, currentSaturationY-5 }, offset + Vec2{ currentHueX, currentSaturationY-1 });
+	g->XorLine(offset + Vec2{ currentHueX, currentSaturationY+1 }, offset + Vec2{ currentHueX, currentSaturationY+5 });
+	g->XorLine(offset + Vec2{ currentHueX-5, currentSaturationY }, offset + Vec2{ currentHueX-1, currentSaturationY });
+	g->XorLine(offset + Vec2{ currentHueX+1, currentSaturationY }, offset + Vec2{ currentHueX+5, currentSaturationY });
 
 }

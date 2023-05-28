@@ -4374,7 +4374,7 @@ require_preload__["tptmp.client.side_button"] = function()
 	end
 	
 	local function new(params)
-		local pos_x, pos_y, width, height = gfx.WIDTH-36, gfx.HEIGHT-36, 17, 17
+		local pos_x, pos_y, width, height = gfx.WIDTH-18, gfx.HEIGHT-36, 17, 17
 		local text = "\xee\x9c\x96"
 		local tw, th = gfx.textSize(text)
 		local tx = pos_x + math.ceil((width - tw) / 2)

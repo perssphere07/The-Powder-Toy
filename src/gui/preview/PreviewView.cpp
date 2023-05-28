@@ -33,9 +33,8 @@
 # undef GetUserName // dammit windows
 #endif
 
-PreviewView::PreviewView():
+PreviewView::PreviewView(std::unique_ptr<VideoBuffer> newSavePreview):
 	ui::Window(ui::Point(-1, -1), ui::Point((XRES/2)+210, (YRES/2)+150)),
-	savePreview(NULL),
 	submitCommentButton(NULL),
 	addCommentBox(NULL),
 	commentWarningLabel(NULL),
@@ -48,6 +47,11 @@ PreviewView::PreviewView():
 	commentBoxHeight(20),
 	commentHelpText(false)
 {
+	if (newSavePreview)
+	{
+		newSavePreview->Resize(RES / 2, true);
+		savePreview = std::move(newSavePreview);
+	}
 	showAvatars = ui::Engine::Ref().ShowAvatars;
 
 	favButton = new ui::Button(ui::Point(50, Size.Y-19), ui::Point(51, 19), "Fav");
@@ -149,13 +153,13 @@ void PreviewView::AttachController(PreviewController * controller)
 {
 	c = controller;
 
-	int textWidth = Graphics::textwidth("Click the box below to copy the save ID");
+	int textWidth = Graphics::TextSize("Click the box below to copy the save ID").X - 1;
 	saveIDLabel = new ui::Label(ui::Point((Size.X-textWidth-20)/2, Size.Y+5), ui::Point(textWidth+20, 16), "Click the box below to copy the save ID");
 	saveIDLabel->SetTextColour(ui::Colour(150, 150, 150));
 	saveIDLabel->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
 	AddComponent(saveIDLabel);
 
-	textWidth = Graphics::textwidth(String::Build(c->SaveID()));
+	textWidth = Graphics::TextSize(String::Build(c->SaveID())).X - 1;
 	saveIDLabel2 = new ui::Label(ui::Point((Size.X-textWidth-20)/2-37, Size.Y+22), ui::Point(40, 16), "Save ID:");
 	AddComponent(saveIDLabel2);
 
@@ -167,7 +171,7 @@ void PreviewView::commentBoxAutoHeight()
 {
 	if(!addCommentBox)
 		return;
-	int textWidth = Graphics::textwidth(addCommentBox->GetText().c_str());
+	int textWidth = Graphics::TextSize(addCommentBox->GetText().c_str()).X - 1;
 	if (commentHelpText || textWidth+15 > Size.X-(XRES/2)-48)
 	{
 		addCommentBox->Appearance.VerticalAlign = ui::Appearance::AlignTop;
@@ -222,7 +226,7 @@ void PreviewView::CheckComment()
 	{
 		if (!commentHelpText)
 		{
-			if (random_gen()%2)
+			if (interfaceRng()%2)
 				commentWarningLabel->SetText("Stolen? Report the save instead");
 			else
 				commentWarningLabel->SetText("Please report stolen saves");
@@ -238,7 +242,7 @@ void PreviewView::CheckComment()
 	{
 		if (!commentHelpText)
 		{
-			if (random_gen()%2)
+			if (interfaceRng()%2)
 				commentWarningLabel->SetText("Please do not swear");
 			else
 				commentWarningLabel->SetText("Bad language may be deleted");
@@ -260,20 +264,18 @@ void PreviewView::DoDraw()
 	{
 		int linePos = commentTextComponents[i]->Position.Y+commentsPanel->ViewportPosition.Y+commentTextComponents[i]->Size.Y+4;
 		if (linePos > 0 && linePos < Size.Y-commentBoxHeight)
-		g->draw_line(
-				Position.X+1+XRES/2,
-				Position.Y+linePos,
-				Position.X+Size.X-2,
-				Position.Y+linePos,
-				255, 255, 255, 100);
+		g->BlendLine(
+				Position + Vec2{ 1+XRES/2, linePos },
+				Position + Vec2{ Size.X-2, linePos },
+				0xFFFFFF_rgb .WithAlpha(100));
 	}
 	if (c->GetDoOpen())
 	{
-		g->fillrect(Position.X+(Size.X/2)-101, Position.Y+(Size.Y/2)-26, 202, 52, 0, 0, 0, 210);
-		g->drawrect(Position.X+(Size.X/2)-100, Position.Y+(Size.Y/2)-25, 200, 50, 255, 255, 255, 180);
-		g->drawtext(Position.X+(Size.X/2)-(Graphics::textwidth("Loading save...")/2), Position.Y+(Size.Y/2)-5, "Loading save...", style::Colour::InformationTitle.Red, style::Colour::InformationTitle.Green, style::Colour::InformationTitle.Blue, 255);
+		g->BlendFilledRect(RectSized(Position + Size / 2 - Vec2{ 101, 26 }, { 202, 52 }), 0x000000_rgb .WithAlpha(210));
+		g->BlendRect(RectSized(Position + Size / 2 - Vec2{ 100, 25 }, Vec2{ 200, 50 }), 0xFFFFFF_rgb .WithAlpha(180));
+		g->BlendText(Position + Vec2{(Size.X/2)-((Graphics::TextSize("Loading save...").X - 1)/2), (Size.Y/2)-5}, "Loading save...", style::Colour::InformationTitle.NoAlpha().WithAlpha(255));
 	}
-	g->drawrect(Position.X, Position.Y, Size.X, Size.Y, 255, 255, 255, 255);
+	g->DrawRect(RectSized(Position, Size), 0xFFFFFF_rgb);
 
 }
 
@@ -282,15 +284,15 @@ void PreviewView::OnDraw()
 	Graphics * g = GetGraphics();
 
 	//Window Background+Outline
-	g->clearrect(Position.X-2, Position.Y-2, Size.X+4, Size.Y+4);
+	g->DrawFilledRect(RectSized(Position - Vec2{ 1, 1 }, Size + Vec2{ 2, 2 }), 0x000000_rgb);
 
 	//Save preview (top-left)
-	if(savePreview && savePreview->Buffer)
+	if (savePreview)
 	{
-		g->draw_image(savePreview, (Position.X+1)+(((XRES/2)-savePreview->Width)/2), (Position.Y+1)+(((YRES/2)-savePreview->Height)/2), 255);
+		g->BlendImage(savePreview->Data(), 0xFF, RectSized(Position + Vec2(1, 1) + (RES / 2 - savePreview->Size()) / 2, savePreview->Size()));
 	}
-	g->drawrect(Position.X, Position.Y, (XRES/2)+1, (YRES/2)+1, 255, 255, 255, 100);
-	g->draw_line(Position.X+XRES/2, Position.Y+1, Position.X+XRES/2, Position.Y+Size.Y-2, 200, 200, 200, 255);
+	g->BlendRect(RectSized(Position, RES / 2 + Vec2{ 1, 1 }), 0xFFFFFF_rgb .WithAlpha(100));
+	g->DrawLine(Position + Vec2{ XRES/2, 1 }, Position + Vec2{ XRES/2, Size.Y-2 }, 0xC8C8C8_rgb);
 
 	if(votesUp || votesDown)
 	{
@@ -314,13 +316,13 @@ void PreviewView::OnDraw()
 		nyu = nyu>50?50:nyu;
 		nyd = nyd>50?50:nyd;
 
-		g->fillrect(Position.X+(XRES/2)-55, Position.Y+(YRES/2)+3, 53, 7, 0, 107, 10, 255);
-		g->fillrect(Position.X+(XRES/2)-55, Position.Y+(YRES/2)+9, 53, 7, 107, 10, 0, 255);
-		g->drawrect(Position.X+(XRES/2)-55, Position.Y+(YRES/2)+3, 53, 7, 128, 128, 128, 255);
-		g->drawrect(Position.X+(XRES/2)-55, Position.Y+(YRES/2)+9, 53, 7, 128, 128, 128, 255);
+		g->DrawFilledRect(RectSized(Position + RES / 2 + Vec2{ -56, 3 }, Vec2{ 54, 7 }), 0x006B0A_rgb);
+		g->DrawFilledRect(RectSized(Position + RES / 2 + Vec2{ -56, 9 }, Vec2{ 54, 7 }), 0x6B0A00_rgb);
+		g->DrawRect(RectSized(Position + Vec2{ (XRES/2)-56, (YRES/2)+3 }, { 54, 7 }), 0x808080_rgb);
+		g->DrawRect(RectSized(Position + Vec2{ (XRES/2)-56, (YRES/2)+9 }, { 54, 7 }), 0x808080_rgb);
 
-		g->fillrect(Position.X+(XRES/2)-4-nyu, Position.Y+(YRES/2)+5, nyu, 3, 57, 187, 57, 255);
-		g->fillrect(Position.X+(XRES/2)-4-nyd, Position.Y+(YRES/2)+11, nyd, 3, 187, 57, 57, 255);
+		g->DrawFilledRect(RectSized(Position + RES / 2 + Vec2{ -4-nyu, 5 }, Vec2{ nyu, 3 }), 0x39BB39_rgb);
+		g->DrawFilledRect(RectSized(Position + RES / 2 + Vec2{ -4-nyd, 11 }, Vec2{ nyd, 3 }), 0xBB3939_rgb);
 	}
 }
 
@@ -417,9 +419,7 @@ void PreviewView::OnKeyPress(int key, int scan, bool repeat, bool shift, bool ct
 
 void PreviewView::NotifySaveChanged(PreviewModel * sender)
 {
-	SaveInfo * save = sender->GetSaveInfo();
-	delete savePreview;
-	savePreview = NULL;
+	auto *save = sender->GetSaveInfo();
 	if(save)
 	{
 		votesUp = save->votesUp;
@@ -464,18 +464,8 @@ void PreviewView::NotifySaveChanged(PreviewModel * sender)
 		if(save->GetGameSave())
 		{
 			savePreview = SaveRenderer::Ref().Render(save->GetGameSave(), false, true);
-
-			if(savePreview && savePreview->Buffer && !(savePreview->Width == XRES/2 && savePreview->Height == YRES/2))
-			{
-				pixel * oldData = savePreview->Buffer;
-				float factorX = ((float)XRES/2)/((float)savePreview->Width);
-				float factorY = ((float)YRES/2)/((float)savePreview->Height);
-				float scaleFactor = factorY < factorX ? factorY : factorX;
-				savePreview->Buffer = Graphics::resample_img(oldData, savePreview->Width, savePreview->Height, int(savePreview->Width*scaleFactor), int(savePreview->Height*scaleFactor));
-				delete[] oldData;
-				savePreview->Width = int(savePreview->Width * scaleFactor);
-				savePreview->Height = int(savePreview->Height * scaleFactor);
-			}
+			if (savePreview)
+				savePreview->ResizeToFit(RES / 2, true);
 		}
 		else if (!sender->GetCanOpen())
 			openButton->Enabled = false;
@@ -667,5 +657,4 @@ PreviewView::~PreviewView()
 		RemoveComponent(submitCommentButton);
 		delete submitCommentButton;
 	}
-	delete savePreview;
 }
