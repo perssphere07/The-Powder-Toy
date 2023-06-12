@@ -1,8 +1,8 @@
 #include "LoginController.h"
-
 #include "client/Client.h"
+#include "client/http/LoginRequest.h"
+#include "client/http/LogoutRequest.h"
 #include "common/platform/Platform.h"
-
 #include "LoginView.h"
 #include "LoginModel.h"
 #include "Config.h"
@@ -25,18 +25,14 @@ void LoginController::Login(ByteString username, ByteString password)
 	loginModel->Login(username, password);
 }
 
-User LoginController::GetUser()
+void LoginController::Logout()
 {
-	return loginModel->GetUser();
+	loginModel->Logout();
 }
 
-void LoginController::Exit()
+void LoginController::Tick()
 {
-	loginView->CloseActiveWindow();
-	Client::Ref().SetAuthUser(loginModel->GetUser());
-	if (onDone)
-		onDone();
-	HasExited = true;
+	loginModel->Tick();
 }
 
 void LoginController::CreateAccount()
@@ -45,10 +41,20 @@ void LoginController::CreateAccount()
 	Platform::OpenURI(uri);
 }
 
-LoginController::~LoginController()
+void LoginController::Exit()
 {
 	loginView->CloseActiveWindow();
+	if (onDone)
+		onDone();
+	HasExited = true;
+}
+
+LoginController::~LoginController()
+{
 	delete loginModel;
-	delete loginView;
+	if (loginView->CloseActiveWindow())
+	{
+		delete loginView;
+	}
 }
 

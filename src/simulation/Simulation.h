@@ -121,8 +121,8 @@ public:
 	uint64_t frameCount;
 	bool ensureDeterminism;
 
-	void Load(const GameSave *save, bool includePressure, Vec2<int> blockP);
-	std::unique_ptr<GameSave> Save(bool includePressure, Rect<int> blockR);
+	void Load(const GameSave *save, bool includePressure, Vec2<int> blockP); // block coordinates
+	std::unique_ptr<GameSave> Save(bool includePressure, Rect<int> partR); // particle coordinates
 	void SaveSimOptions(GameSave &gameSave);
 	SimulationSample GetSample(int x, int y);
 
@@ -218,7 +218,10 @@ public:
 	Simulation();
 	~Simulation();
 
-	bool InBounds(int x, int y);
+	static bool InBounds(int x, int y)
+	{
+		return RES.OriginRect().Contains({ x, y });
+	}
 
 	// These don't really belong anywhere at the moment, so go here for loop edge mode
 	static int remainder_p(int x, int y);

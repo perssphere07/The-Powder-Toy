@@ -1,13 +1,14 @@
 #pragma once
 #include "common/ExplicitSingleton.h"
 #include "common/String.h"
+#include "client/http/PostData.h"
 #include <atomic>
 #include <thread>
 #include <vector>
 #include <memory>
 #include <mutex>
-#include <map>
 #include <condition_variable>
+#include <optional>
 
 namespace http
 {
@@ -24,7 +25,7 @@ namespace http
 		ByteString uri;
 		ByteString verb;
 		bool isPost = false;
-		std::map<ByteString, ByteString> postData;
+		PostData postData;
 		std::vector<ByteString> headers;
 
 		enum State
@@ -42,7 +43,8 @@ namespace http
 		int statusCode = 0;
 		ByteString responseData;
 		std::vector<ByteString> responseHeaders;
-		ByteString error;
+		std::optional<ByteString> error;
+		std::optional<ByteString> failEarly;
 
 		RequestHandle(CtorTag)
 		{
@@ -50,6 +52,8 @@ namespace http
 
 		RequestHandle(const RequestHandle &) = delete;
 		RequestHandle &operator =(const RequestHandle &) = delete;
+
+		void MarkDone();
 
 		static std::shared_ptr<RequestHandle> Create();
 	};
@@ -62,41 +66,27 @@ namespace http
 	using RequestManagerPtr = std::unique_ptr<RequestManager, RequestManagerDeleter>;
 	class RequestManager : public ExplicitSingleton<RequestManager>
 	{
+	protected:
 		ByteString proxy;
 		ByteString cafile;
 		ByteString capath;
 		ByteString userAgent;
 		bool disableNetwork;
 
-		std::thread worker;
-		void InitWorker();
-		void Worker();
-		void ExitWorker();
-
-		std::vector<std::shared_ptr<RequestHandle>> requestHandles;
-		void RegisterRequestHandle(std::shared_ptr<RequestHandle> requestHandle);
-		void UnregisterRequestHandle(std::shared_ptr<RequestHandle> requestHandle);
-		void Tick();
-
-		// State shared between Request threads and the worker thread.
-		std::vector<std::shared_ptr<RequestHandle>> requestHandlesToRegister;
-		std::vector<std::shared_ptr<RequestHandle>> requestHandlesToUnregister;
-		bool running = true;
-		std::mutex sharedStateMx;
-
-	protected:
 		RequestManager(ByteString newProxy, ByteString newCafile, ByteString newCapath, bool newDisableNetwork);
 
-	public:
-		~RequestManager();
+		void RegisterRequestImpl(Request &request);
+		void UnregisterRequestImpl(Request &request);
 
+	public:
 		void RegisterRequest(Request &request);
 		void UnregisterRequest(Request &request);
 
-		bool DisableNetwork() const;
+		bool DisableNetwork() const
+		{
+			return disableNetwork;
+		}
 
 		static RequestManagerPtr Create(ByteString newProxy, ByteString newCafile, ByteString newCapath, bool newDisableNetwork);
 	};
-
-	constexpr int TickMs = 100;
 }

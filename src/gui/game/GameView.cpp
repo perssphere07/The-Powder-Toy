@@ -214,9 +214,7 @@ GameView::GameView():
 	selectPoint1(0, 0),
 	selectPoint2(0, 0),
 	currentMouse(0, 0),
-	mousePosition(0, 0),
-	placeSaveThumb(nullptr),
-	placeSaveOffset(0, 0)
+	mousePosition(0, 0)
 {
 
 	int currentX = 1;
@@ -1377,7 +1375,16 @@ void GameView::OnMouseDown(int x, int y, unsigned button)
 
 Vec2<int> GameView::PlaceSavePos() const
 {
-	return c->NormaliseBlockCoord(selectPoint2 + placeSaveOffset * CELL + Vec2(1, 1) * CELL / 2).Clamp(RectBetween(Vec2<int>::Zero, RES - placeSaveThumb->Size()));
+	auto [ trQuoX, trRemX ] = floorDiv(placeSaveTranslate.X, CELL);
+	auto [ trQuoY, trRemY ] = floorDiv(placeSaveTranslate.Y, CELL);
+	auto usefulSize = placeSaveThumb->Size();
+	if (trRemX) usefulSize.X -= CELL;
+	if (trRemY) usefulSize.Y -= CELL;
+	auto cursorCell = (usefulSize - Vec2{ CELL, CELL }) / 2 - Vec2{ trQuoX, trQuoY } * CELL; // stamp coordinates
+	auto unaligned = selectPoint2 - cursorCell;
+	auto quoX = floorDiv(unaligned.X, CELL).first;
+	auto quoY = floorDiv(unaligned.Y, CELL).first;
+	return { quoX, quoY };
 }
 
 void GameView::OnMouseUp(int x, int y, unsigned button)
@@ -1400,7 +1407,7 @@ void GameView::OnMouseUp(int x, int y, unsigned button)
 				{
 					if (placeSaveThumb && y <= WINDOWH-BARSIZE)
 					{
-						c->PlaceSave(PlaceSavePos() / CELL);
+						c->PlaceSave(PlaceSavePos());
 					}
 				}
 				else
@@ -1617,8 +1624,7 @@ void GameView::OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl,
 		c->ReloadSim();
 		break;
 	case SDL_SCANCODE_A:
-		if ((Client::Ref().GetAuthUser().UserElevation == User::ElevationModerator
-		     || Client::Ref().GetAuthUser().UserElevation == User::ElevationAdmin) && ctrl)
+		if (Client::Ref().GetAuthUser().UserElevation != User::ElevationNone && ctrl)
 		{
 			ByteString authorString = Client::Ref().GetAuthorInfo().toStyledString();
 			new InformationMessage("Save authorship info", authorString.FromUtf8(), true);
@@ -2129,19 +2135,6 @@ void GameView::TransformSave(Mat2<int> mulToTransform)
 	ApplyTransformPlaceSave();
 }
 
-template<class Signed>
-static std::pair<Signed, Signed> floorDiv(Signed a, Signed b)
-{
-	auto quo = a / b;
-	auto rem = a % b;
-	if (a < Signed(0) && rem)
-	{
-		quo -= Signed(1);
-		rem += b;
-	}
-	return { quo, rem };
-}
-
 void GameView::ApplyTransformPlaceSave()
 {
 	auto remX = floorDiv(placeSaveTranslate.X, CELL).second;
@@ -2154,13 +2147,6 @@ void GameView::NotifyTransformedPlaceSaveChanged(GameModel *sender)
 	if (sender->GetTransformedPlaceSave())
 	{
 		placeSaveThumb = SaveRenderer::Ref().Render(sender->GetTransformedPlaceSave(), true, true, sender->GetRenderer());
-		auto [ quoX, remX ] = floorDiv(placeSaveTranslate.X, CELL);
-		auto [ quoY, remY ] = floorDiv(placeSaveTranslate.Y, CELL);
-		placeSaveOffset = Vec2{ quoX, quoY };
-		auto usefulSize = placeSaveThumb->Size() / CELL;
-		if (remX) usefulSize.X -= 1;
-		if (remY) usefulSize.Y -= 1;
-		placeSaveOffset -= usefulSize / 2;
 		selectMode = PlaceSave;
 		selectPoint2 = mousePosition;
 	}
@@ -2376,7 +2362,7 @@ void GameView::OnDraw()
 			{
 				if(placeSaveThumb && selectPoint2.X!=-1)
 				{
-					auto rect = RectSized(PlaceSavePos(), placeSaveThumb->Size());
+					auto rect = RectSized(PlaceSavePos() * CELL, placeSaveThumb->Size());
 					ren->BlendImage(placeSaveThumb->Data(), 0x80, rect);
 					ren->XorDottedRect(rect);
 				}
