@@ -383,11 +383,15 @@ GameView::GameView():
 	findButton->Appearance.Margin.Top += 1;
 	currentX += 18;
 	findButton->SetActionCallback({ [this] {
-		Tool *active = c->GetActiveTool(0);
-		if (!active->Identifier.Contains("_PT_") || (ren->findingElement == active->ToolID))
-			ren->findingElement = 0;
+		auto findingElementCandidate = FindingElementCandidate();
+		if (ren->findingElement == findingElementCandidate)
+		{
+			ren->findingElement = std::nullopt;
+		}
 		else
-			ren->findingElement = active->ToolID;
+		{
+			ren->findingElement = findingElementCandidate;
+		}
 		NotifyFindModeChanged();
 	} });
 	AddComponent(findButton);
@@ -702,11 +706,7 @@ void GameView::NotifyActiveToolsChanged(GameModel * sender)
 
 	if (sender->GetRenderer()->findingElement)
 	{
-		Tool *active = sender->GetActiveTool(0);
-		if (!active->Identifier.Contains("_PT_"))
-			ren->findingElement = 0;
-		else
-			ren->findingElement = sender->GetActiveTool(0)->ToolID;
+		ren->findingElement = FindingElementCandidate();
 	}
 }
 
@@ -786,10 +786,9 @@ void GameView::NotifyToolListChanged(GameModel * sender)
 					}
 					else if (identifier.BeginsWith("DEFAULT_PT_LIFECUST_"))
 					{
-						if (ConfirmPrompt::Blocking("Remove custom GOL type", "Are you sure you want to remove " + identifier.Substr(20).FromUtf8() + "?"))
-						{
+						new ConfirmPrompt("Remove custom GOL type", "Are you sure you want to remove " + identifier.Substr(20).FromUtf8() + "?", { [this, identifier]() {
 							c->RemoveCustomGOLType(identifier);
-						}
+						} });
 					}
 				}
 			}
@@ -1099,7 +1098,7 @@ void GameView::NotifyBrushChanged(GameModel * sender)
 
 void GameView::NotifyFindModeChanged()
 {
-	findButton->SetToggleState(ren->findingElement != 0);
+	findButton->SetToggleState(ren->findingElement != std::nullopt);
 }
 
 void GameView::NotifyDebugHUDChanged()
@@ -1186,17 +1185,12 @@ int GameView::Record(bool record)
 	}
 	else if (!recording)
 	{
-		// block so that the return value is correct
-		bool record = ConfirmPrompt::Blocking("Recording", "You're about to start recording all drawn frames. This will use a load of disk space.");
-		if (record)
-		{
-			time_t startTime = time(NULL);
-			recordingFolder = startTime;
-			Platform::MakeDirectory("recordings");
-			Platform::MakeDirectory(ByteString::Build("recordings", PATH_SEP_CHAR, recordingFolder));
-			recording = true;
-			recordingIndex = 0;
-		}
+		time_t startTime = time(NULL);
+		recordingFolder = startTime;
+		Platform::MakeDirectory("recordings");
+		Platform::MakeDirectory(ByteString::Build("recordings", PATH_SEP_CHAR, recordingFolder));
+		recording = true;
+		recordingIndex = 0;
 	}
 	return recordingFolder;
 }
@@ -1640,11 +1634,15 @@ void GameView::OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl,
 	case SDL_SCANCODE_F:
 		if (ctrl)
 		{
-			Tool *active = c->GetActiveTool(0);
-			if (!active->Identifier.Contains("_PT_") || (ren->findingElement == active->ToolID))
-				ren->findingElement = 0;
+			auto findingElementCandidate = FindingElementCandidate();
+			if (ren->findingElement == findingElementCandidate)
+			{
+				ren->findingElement = std::nullopt;
+			}
 			else
-				ren->findingElement = active->ToolID;
+			{
+				ren->findingElement = findingElementCandidate;
+			}
 			NotifyFindModeChanged();
 		}
 		else
@@ -1700,7 +1698,10 @@ void GameView::OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl,
 		break;
 	case SDL_SCANCODE_ESCAPE:
 	case SDL_SCANCODE_Q:
-		ui::Engine::Ref().ConfirmExit();
+		if (ALLOW_QUIT)
+		{
+			ui::Engine::Ref().ConfirmExit();
+		}
 		break;
 	case SDL_SCANCODE_U:
 		if (ctrl)
@@ -1858,9 +1859,21 @@ void GameView::OnFileDrop(ByteString filename)
 		new ErrorMessage("Error loading save", "Dropped save file could not be loaded: " + saveFile->GetError());
 		return;
 	}
-	c->LoadSaveFile(std::move(saveFile));
+	if (filename.EndsWith(".stm"))
+	{
+		c->LoadStamp(saveFile->TakeGameSave());
+	}
+	else
+	{
+		c->LoadSaveFile(std::move(saveFile));
+	}
 
 	// hide the info text if it's not already hidden
+	SkipIntroText();
+}
+
+void GameView::SkipIntroText()
+{
 	introText = 0;
 }
 
@@ -2702,4 +2715,22 @@ ui::Point GameView::rectSnapCoords(ui::Point point1, ui::Point point2)
 		return point1 + ui::Point((diff.X + diff.Y)/2, (diff.X + diff.Y)/2);
 	// SW-NE
 	return point1 + ui::Point((diff.X - diff.Y)/2, (diff.Y - diff.X)/2);
+}
+
+std::optional<FindingElement> GameView::FindingElementCandidate() const
+{
+	Tool *active = c->GetActiveTool(0);
+	if (active->Identifier.Contains("_PT_"))
+	{
+		return FindingElement{ Particle::GetProperties()[FIELD_TYPE], active->ToolID };
+	}
+	else if (active->Identifier == "DEFAULT_UI_PROPERTY")
+	{
+		auto configuration = static_cast<PropertyTool *>(active)->GetConfiguration();
+		if (configuration)
+		{
+			return FindingElement{ configuration->prop, configuration->propValue };
+		}
+	}
+	return std::nullopt;
 }

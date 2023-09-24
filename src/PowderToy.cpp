@@ -83,11 +83,10 @@ void LargeScreenDialog()
 	message << "Switching to " << scale << "x size mode since your screen was determined to be large enough: ";
 	message << desktopWidth << "x" << desktopHeight << " detected, " << WINDOWW*scale << "x" << WINDOWH*scale << " required";
 	message << "\nTo undo this, hit Cancel. You can change this in settings at any time.";
-	if (!ConfirmPrompt::Blocking("Large screen detected", message.Build()))
-	{
+	new ConfirmPrompt("Large screen detected", message.Build(), { nullptr, []() {
 		GlobalPrefs::Ref().Set("Scale", 1);
 		ui::Engine::Ref().SetScale(1);
-	}
+	} });
 }
 
 void TickClient()
@@ -180,10 +179,16 @@ struct ExplicitSingletons
 };
 static std::unique_ptr<ExplicitSingletons> explicitSingletons;
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
 	Platform::SetupCrt();
+	return Platform::InvokeMain(argc, argv);
+}
+
+int Main(int argc, char *argv[])
+{
 	Platform::Atexit([]() {
+		SaveWindowPosition();
 		// Unregister dodgy error handlers so they don't try to show the blue screen when the window is closed
 		for (auto *msg = signalMessages; msg->message; ++msg)
 		{
@@ -254,22 +259,22 @@ int main(int argc, char * argv[])
 	}
 	else
 	{
-		auto ddir = std::unique_ptr<char, decltype(&SDL_free)>(SDL_GetPrefPath(NULL, APPDATA), SDL_free);
+		auto ddir = Platform::DefaultDdir();
 		if (!Platform::FileExists("powder.pref"))
 		{
-			if (ddir)
+			if (ddir.size())
 			{
-				if (!Platform::ChangeDir(ddir.get()))
+				if (!Platform::ChangeDir(ddir))
 				{
 					perror("failed to chdir to default ddir");
-					ddir.reset();
+					ddir = {};
 				}
 			}
 		}
 
-		if (ddir)
+		if (ddir.size())
 		{
-			Platform::sharedCwd = ddir.get();
+			Platform::sharedCwd = ddir;
 		}
 	}
 	// We're now in the correct directory, time to get prefs.
@@ -392,7 +397,7 @@ int main(int argc, char * argv[])
 	engine.Begin();
 	engine.SetFastQuit(prefs.Get("FastQuit", true));
 
-	bool enableBluescreen = !DEBUG && !true_arg(arguments["disable-bluescreen"]);
+	bool enableBluescreen = USE_BLUESCREEN && !true_arg(arguments["disable-bluescreen"]);
 	if (enableBluescreen)
 	{
 		//Get ready to catch any dodgy errors
@@ -475,43 +480,28 @@ int main(int argc, char * argv[])
 				{
 					std::cout << "Got Ptsave: id: " << saveIdPart << std::endl;
 				}
+				ByteString saveHistoryPart = "0";
+				if (auto split = saveIdPart.SplitBy('@'))
+				{
+					saveHistoryPart = split.After();
+					saveIdPart = split.Before();
+				}
 				int saveId = saveIdPart.ToNumber<int>();
-
-				auto getSave = std::make_unique<http::GetSaveRequest>(saveId, 0);
-				getSave->Start();
-				getSave->Wait();
-				std::unique_ptr<SaveInfo> newSave;
-				try
-				{
-					newSave = getSave->Finish();
-				}
-				catch (const http::RequestError &ex)
-				{
-					throw std::runtime_error("Could not load save info\n" + ByteString(ex.what()));
-				}
-				auto getSaveData = std::make_unique<http::GetSaveDataRequest>(saveId, 0);
-				getSaveData->Start();
-				getSaveData->Wait();
-				std::unique_ptr<GameSave> saveData;
-				try
-				{
-					saveData = std::make_unique<GameSave>(getSaveData->Finish());
-				}
-				catch (const http::RequestError &ex)
-				{
-					throw std::runtime_error("Could not load save\n" + ByteString(ex.what()));
-				}
-				newSave->SetGameSave(std::move(saveData));
-				gameController->LoadSave(std::move(newSave));
+				int saveHistory = saveHistoryPart.ToNumber<int>();
+				gameController->OpenSavePreview(saveId, saveHistory, savePreviewUrl);
 			}
 			catch (std::exception & e)
 			{
 				new ErrorMessage("Error", ByteString(e.what()).FromUtf8());
+				Platform::MarkPresentable();
 			}
 		}
+		else
+		{
+			Platform::MarkPresentable();
+		}
 
-		EngineProcess();
-		SaveWindowPosition();
+		MainLoop();
 	};
 
 	if (enableBluescreen)

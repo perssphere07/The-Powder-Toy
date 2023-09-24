@@ -831,7 +831,9 @@ int GameModel::GetBrushID()
 
 void GameModel::SetBrushID(int i)
 {
+	auto prevRadius = brushList[currentBrush]->GetRadius();
 	currentBrush = i%brushList.size();
+	brushList[currentBrush]->SetRadius(prevRadius);
 	notifyBrushChanged();
 }
 

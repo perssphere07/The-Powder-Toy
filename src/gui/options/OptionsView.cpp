@@ -18,6 +18,7 @@
 #include "gui/interface/Textbox.h"
 #include "gui/interface/DirectionSelector.h"
 #include "PowderToySDL.h"
+#include "Config.h"
 #include <cstdio>
 #include <cstring>
 #include <cmath>
@@ -251,22 +252,28 @@ OptionsView::OptionsView() : ui::Window(ui::Point(-1, -1), ui::Point(320, 340))
 			c->SetScale(scale->GetOption().second);
 		});
 	}
-	resizable = addCheckbox(0, "Resizable \bg- allow resizing and maximizing window", "", [this] {
-		c->SetResizable(resizable->GetChecked());
-	});
-	fullscreen = addCheckbox(0, "Fullscreen \bg- fill the entire screen", "", [this] {
-		c->SetFullscreen(fullscreen->GetChecked());
-	});
-	altFullscreen = addCheckbox(1, "Set optimal screen resolution", "", [this] {
-		c->SetAltFullscreen(altFullscreen->GetChecked());
-	});
-	forceIntegerScaling = addCheckbox(1, "Force integer scaling \bg- less blurry", "", [this] {
-		c->SetForceIntegerScaling(forceIntegerScaling->GetChecked());
-	});
+	if (ALLOW_WINDOW_FRAME_OPS)
+	{
+		resizable = addCheckbox(0, "Resizable \bg- allow resizing and maximizing window", "", [this] {
+			c->SetResizable(resizable->GetChecked());
+		});
+		fullscreen = addCheckbox(0, "Fullscreen \bg- fill the entire screen", "", [this] {
+			c->SetFullscreen(fullscreen->GetChecked());
+		});
+		altFullscreen = addCheckbox(1, "Set optimal screen resolution", "", [this] {
+			c->SetAltFullscreen(altFullscreen->GetChecked());
+		});
+		forceIntegerScaling = addCheckbox(1, "Force integer scaling \bg- less blurry", "", [this] {
+			c->SetForceIntegerScaling(forceIntegerScaling->GetChecked());
+		});
+	}
 	addSeparator();
-	fastquit = addCheckbox(0, "Fast quit", "Always exit completely when hitting close", [this] {
-		c->SetFastQuit(fastquit->GetChecked());
-	});
+	if (ALLOW_QUIT)
+	{
+		fastquit = addCheckbox(0, "Fast quit", "Always exit completely when hitting close", [this] {
+			c->SetFastQuit(fastquit->GetChecked());
+		});
+	}
 	showAvatars = addCheckbox(0, "Show avatars", "Disable if you have a slow connection", [this] {
 		c->SetShowAvatars(showAvatars->GetChecked());
 	});
@@ -294,8 +301,9 @@ OptionsView::OptionsView() : ui::Window(ui::Point(-1, -1), ui::Point(320, 340))
 		c->SetDecoSpace(decoSpace->GetOption().second);
 	});
 
+	currentY += 4;
+	if (ALLOW_DATA_FOLDER)
 	{
-		currentY += 4;
 		auto *dataFolderButton = new ui::Button(ui::Point(10, currentY), ui::Point(90, 16), "Open data folder");
 		dataFolderButton->SetActionCallback({ [] {
 			ByteString cwd = Platform::GetCwd();
@@ -431,11 +439,26 @@ void OptionsView::NotifySettingsChanged(OptionsModel * sender)
 	decoSpace->SetOption(sender->GetDecoSpace());
 	edgeMode->SetOption(sender->GetEdgeMode());
 	scale->SetOption(sender->GetScale());
-	resizable->SetChecked(sender->GetResizable());
-	fullscreen->SetChecked(sender->GetFullscreen());
-	altFullscreen->SetChecked(sender->GetAltFullscreen());
-	forceIntegerScaling->SetChecked(sender->GetForceIntegerScaling());
-	fastquit->SetChecked(sender->GetFastQuit());
+	if (resizable)
+	{
+		resizable->SetChecked(sender->GetResizable());
+	}
+	if (fullscreen)
+	{
+		fullscreen->SetChecked(sender->GetFullscreen());
+	}
+	if (altFullscreen)
+	{
+		altFullscreen->SetChecked(sender->GetAltFullscreen());
+	}
+	if (forceIntegerScaling)
+	{
+		forceIntegerScaling->SetChecked(sender->GetForceIntegerScaling());
+	}
+	if (fastquit)
+	{
+		fastquit->SetChecked(sender->GetFastQuit());
+	}
 	showAvatars->SetChecked(sender->GetShowAvatars());
 	mouseClickRequired->SetChecked(sender->GetMouseClickRequired());
 	includePressure->SetChecked(sender->GetIncludePressure());
