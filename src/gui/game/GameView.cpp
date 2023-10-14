@@ -228,7 +228,7 @@ GameView::GameView():
 	AddComponent(scrollBar);
 
 	appButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(150, 17), "The Powder Toy* 97.0", 
-		"Perssphere's Mod 2.9, The Powder Toy* 97.0"
+		"Perssphere's Mod 2.10, The Powder Toy* 97.0"
 	);
 	appButton->SetIcon(IconApp);
 	appButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
