@@ -4,13 +4,13 @@ project(
 	version: 'the.cake.is.a.lie',
 	default_options: [
 		'c_std=c99',
-		'cpp_std=c++17',
+		'cpp_std=c++20',
 		'cpp_rtti=false',
 		'build.c_std=c99', # used by to_array
-		'build.cpp_std=c++17', # used by to_array
+		'build.cpp_std=c++20', # used by to_array
 		'build.cpp_rtti=false', # used by to_array
 	],
-	meson_version: '>=0.64.0',
+	meson_version: '>=1.0.0',
 )
 
 if get_option('prepare')
