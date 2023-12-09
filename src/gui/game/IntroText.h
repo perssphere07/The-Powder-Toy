@@ -1,5 +1,6 @@
 #pragma once
 #include "Config.h"
+#include "SimulationConfig.h"
 #include "common/String.h"
 
 inline ByteString VersionInfo()
@@ -23,9 +24,10 @@ inline ByteString VersionInfo()
 	{
 		sb << " LUACONSOLE";
 	}
-#ifdef REALISTIC
-	sb << " REALISTIC";
-#endif
+	if constexpr (LATENTHEAT)
+	{
+		sb << " LATENTHEAT";
+	}
 	if constexpr (NOHTTP)
 	{
 		sb << " NOHTTP";
@@ -44,7 +46,7 @@ inline ByteString VersionInfo()
 inline ByteString IntroText()
 {
 	ByteStringBuilder sb;
-	sb << "\blPerssphere's Mod " << MOD_MAJOR_VERSION << "." << MOD_MINOR_VERSION << ", \bU" << APPNAME << "*\bU " << DISPLAY_VERSION[0] << "." << DISPLAY_VERSION[1] << " - https://powdertoy.co.uk, irc.libera.chat #powder, https://tpt.io/discord\n"
+	sb << "\blPerssphere's Mod " << DISPLAY_VERSION[0] << "." << DISPLAY_VERSION[1] << ", \bU" << APPNAME << "*\bU " << UPSTREAM_VERSION.displayVersion[0] << "." << UPSTREAM_VERSION.displayVersion[1] << " - https://powdertoy.co.uk, irc.libera.chat #powder, https://tpt.io/discord\n"
 	      "\n"
 	      "\n"
 	      "\bgControl+C/V/X are Copy, Paste and cut respectively.\n"
