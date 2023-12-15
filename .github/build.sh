@@ -269,11 +269,11 @@ if [[ $stable_or_beta == yes ]]; then
 	display_version_major=$(echo $xyz | cut -d '.' -f 1)
 	display_version_minor=$(echo $xyz | cut -d '.' -f 2)
 	build_num=$(echo $xyz | cut -d '.' -f 3)
-	if [[ $MOD_ID != 0 ]]; then
+	# if [[ $MOD_ID != 0 ]]; then
 		meson_configure+=$'\t'-Ddisplay_version_major=$display_version_major
 		meson_configure+=$'\t'-Ddisplay_version_minor=$display_version_minor
 		meson_configure+=$'\t'-Dbuild_num=$build_num
-	fi
+	# fi
 fi
 if [[ $RELEASE_TYPE == snapshot ]]; then
 	build_num=$(echo $RELEASE_NAME | cut -d '-' -f 2) # $RELEASE_NAME is snapshot-X
