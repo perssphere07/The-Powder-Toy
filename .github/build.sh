@@ -386,27 +386,27 @@ meson_configure+=$'\t'-Dcpp_link_args=[$c_link_args]
 $meson_configure build
 cd build
 
-# function verify_version_component() {
-# 	local key=$1
-# 	local expected=$2
-# 	local actual=$(jq -r '.[] | select(.name == "'$key'") | .value' < meson-info/intro-buildoptions.json)
-# 	if [[ $actual != $expected ]]; then
-# 		>&2 echo "meson option $key expected to be $expected, is instead $actual"
-# 		exit 1
-# 	fi
-# }
-# if [[ $stable_or_beta == yes ]] && [[ $MOD_ID == 0 ]]; then
-# 	verify_version_component display_version_major $display_version_major
-# 	verify_version_component display_version_minor $display_version_minor
-# 	verify_version_component build_num $build_num
-# 	verify_version_component upstream_version_major $display_version_major
-# 	verify_version_component upstream_version_minor $display_version_minor
-# 	verify_version_component upstream_build_num $build_num
-# fi
-# if [[ $RELEASE_TYPE == snapshot ]] && [[ $MOD_ID == 0 ]]; then
-# 	verify_version_component build_num $build_num
-# 	verify_version_component upstream_build_num $build_num
-# fi
+function verify_version_component() {
+	local key=$1
+	local expected=$2
+	local actual=$(jq -r '.[] | select(.name == "'$key'") | .value' < meson-info/intro-buildoptions.json)
+	if [[ $actual != $expected ]]; then
+		>&2 echo "meson option $key expected to be $expected, is instead $actual"
+		exit 1
+	fi
+}
+if [[ $stable_or_beta == yes ]] && [[ $MOD_ID == 0 ]]; then
+	verify_version_component display_version_major $display_version_major
+	verify_version_component display_version_minor $display_version_minor
+	verify_version_component build_num $build_num
+	verify_version_component upstream_version_major $display_version_major
+	verify_version_component upstream_version_minor $display_version_minor
+	verify_version_component upstream_build_num $build_num
+fi
+if [[ $RELEASE_TYPE == snapshot ]] && [[ $MOD_ID == 0 ]]; then
+	verify_version_component build_num $build_num
+	verify_version_component upstream_build_num $build_num
+fi
 
 strip=strip
 objcopy=objcopy
