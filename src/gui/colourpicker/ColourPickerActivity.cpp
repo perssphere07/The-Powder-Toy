@@ -13,7 +13,7 @@
 #include <SDL.h>
 
 ColourPickerActivity::ColourPickerActivity(ui::Colour initialColour, OnPicked onPicked_) :
-	WindowActivity(ui::Point(-1, -1), ui::Point(362, 228)),
+	WindowActivity(ui::Point(-1, -1), ui::Point(266, 215)),
 	currentHue(0),
 	currentSaturation(0),
 	currentValue(0),
@@ -43,6 +43,8 @@ ColourPickerActivity::ColourPickerActivity(ui::Colour initialColour, OnPicked on
 
 	auto colourChangeSlider = [this] {
 		int r, g, b;
+		currentHue = hSlider->GetValue();
+		currentSaturation = sSlider->GetValue();
 		currentValue = vSlider->GetValue();
 
 		HSV_to_RGB(currentHue, currentSaturation, currentValue, &r, &g, &b);
@@ -51,53 +53,47 @@ ColourPickerActivity::ColourPickerActivity(ui::Colour initialColour, OnPicked on
 	};
 
 
-	vSlider = new ui::Slider(ui::Point(10, 201), ui::Point(182, 17), 255);
+	hSlider = new ui::Slider(ui::Point(0,134), ui::Point(Size.X,17), 359);
+	hSlider->SetActionCallback({ colourChangeSlider });
+	AddComponent(hSlider);
+
+	sSlider = new ui::Slider(ui::Point(0, 134 + 17), ui::Point(Size.X, 17), 255);
+	sSlider->SetActionCallback({ colourChangeSlider });
+	AddComponent(sSlider);
+
+	vSlider = new ui::Slider(ui::Point(0, 134 + 34), ui::Point(Size.X, 17), 255);
 	vSlider->SetActionCallback({ colourChangeSlider });
 	AddComponent(vSlider);
 
 
-	hexValue = new::ui::Label(ui::Point(240, 11), ui::Point(53, 17), "#FFFFFF");
-	hexValue->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
-	AddComponent(hexValue);
-
-	rValue = new ui::Textbox(ui::Point(240, 38), ui::Point(50, 17), "255");
-	rValue->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	rValue = new ui::Textbox(ui::Point(5, Size.Y-23), ui::Point(30, 17), "255");
 	rValue->SetActionCallback({ colourChange });
 	rValue->SetLimit(3);
 	rValue->SetInputType(ui::Textbox::Number);
 	AddComponent(rValue);
 
-	gValue = new ui::Textbox(ui::Point(240, 65), ui::Point(50, 17), "255");
-	gValue->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	gValue = new ui::Textbox(ui::Point(40, Size.Y-23), ui::Point(30, 17), "255");
 	gValue->SetActionCallback({ colourChange });
 	gValue->SetLimit(3);
 	gValue->SetInputType(ui::Textbox::Number);
 	AddComponent(gValue);
 
-	bValue = new ui::Textbox(ui::Point(240, 92), ui::Point(50, 17), "255");
-	bValue->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	bValue = new ui::Textbox(ui::Point(75, Size.Y-23), ui::Point(30, 17), "255");
 	bValue->SetActionCallback({ colourChange });
 	bValue->SetLimit(3);
 	bValue->SetInputType(ui::Textbox::Number);
 	AddComponent(bValue);
 
-	aValue = new ui::Textbox(ui::Point(240, 119), ui::Point(50, 17), "255");
-	aValue->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	aValue = new ui::Textbox(ui::Point(110, Size.Y-23), ui::Point(30, 17), "255");
 	aValue->SetActionCallback({ colourChange });
 	aValue->SetLimit(3);
 	aValue->SetInputType(ui::Textbox::Number);
 	AddComponent(aValue);
 
-	redLabel = new::ui::Label(ui::Point(300, 38), ui::Point(15, 17), "Red");
-	greenLabel = new::ui::Label(ui::Point(300, 65), ui::Point(24, 17), "Green");
-	blueLabel = new::ui::Label(ui::Point(300, 92), ui::Point(19, 17), "Blue");
-	alphaLabel = new::ui::Label(ui::Point(300, 119), ui::Point(34, 17), "Opacity");
-	AddComponent(redLabel);
-	AddComponent(greenLabel);
-	AddComponent(blueLabel);
-	AddComponent(alphaLabel);
+	hexValue = new::ui::Label(ui::Point(150, Size.Y-23), ui::Point(53, 17), "0xFFFFFFFF");
+	AddComponent(hexValue);
 
-	ui::Button * doneButton = new ui::Button(ui::Point(Size.X-51, Size.Y-28), ui::Point(40, 17), "Done");
+	ui::Button * doneButton = new ui::Button(ui::Point(Size.X-45, Size.Y-23), ui::Point(40, 17), "Done");
 	doneButton->SetActionCallback({ [this] {
 		int Red, Green, Blue;
 		Red = rValue->GetText().ToNumber<int>(true);
@@ -123,11 +119,13 @@ void ColourPickerActivity::UpdateTextboxes(int r, int g, int b, int a)
 	gValue->SetText(String::Build(g));
 	bValue->SetText(String::Build(b));
 	aValue->SetText(String::Build(a));
-	hexValue->SetText(String::Build(Format::Hex(), Format::Uppercase(), Format::Width(2), "#", r, g, b));
+	hexValue->SetText(String::Build(Format::Hex(), Format::Uppercase(), Format::Width(2), a, r, g, b));
 }
 
 void ColourPickerActivity::UpdateSliders()
 {
+	hSlider->SetValue(currentHue);
+	sSlider->SetValue(currentSaturation);
 	vSlider->SetValue(currentValue);
 
 	int r, g, b;
@@ -135,6 +133,13 @@ void ColourPickerActivity::UpdateSliders()
 	//Value gradient
 	HSV_to_RGB(currentHue, currentSaturation, 255, &r, &g, &b);
 	vSlider->SetColour(ui::Colour(0, 0, 0), ui::Colour(r, g, b));
+
+	//Saturation gradient
+	if (currentValue != 0)
+	{
+		HSV_to_RGB(currentHue, 255, currentValue, &r, &g, &b);
+		sSlider->SetColour(ui::Colour(currentValue, currentValue, currentValue), ui::Colour(r, g, b));
+	}
 }
 
 void ColourPickerActivity::OnTryExit(ExitMethod method)
@@ -146,11 +151,11 @@ void ColourPickerActivity::OnMouseMove(int x, int y, int dx, int dy)
 {
 	if(mouseDown)
 	{
-		x -= Position.X+11;
-		y -= Position.Y+11;
+		x -= Position.X+5;
+		y -= Position.Y+5;
 
-		currentHue = (int)(x / 180.0f * 359.0f);
-		currentSaturation = 255 - (int)(y / 180.0f * 255.0f);
+		currentHue = int((float(x)/float(255))*359.0f);
+		currentSaturation = 255-(y*2);
 
 		if(currentSaturation > 255)
 			currentSaturation = 255;
@@ -173,13 +178,13 @@ void ColourPickerActivity::OnMouseMove(int x, int y, int dx, int dy)
 
 void ColourPickerActivity::OnMouseDown(int x, int y, unsigned button)
 {
-	x -= Position.X+11;
-	y -= Position.Y+11;
-	if(x >= 0 && x < 180 && y >= 0 && y <= 180)
+	x -= Position.X+5;
+	y -= Position.Y+5;
+	if(x >= 0 && x < 256 && y >= 0 && y <= 128)
 	{
 		mouseDown = true;
-		currentHue = (int)(x / 180.0f * 359.0f);
-		currentSaturation = 255 - (int)(y / 180.0f * 255.0f);
+		currentHue = int((float(x)/float(255))*359.0f);
+		currentSaturation = 255-(y*2);
 
 		if(currentSaturation > 255)
 			currentSaturation = 255;
@@ -213,11 +218,11 @@ void ColourPickerActivity::OnMouseUp(int x, int y, unsigned button)
 	if(mouseDown)
 	{
 		mouseDown = false;
-		x -= Position.X+11;
-		y -= Position.Y+11;
+		x -= Position.X+5;
+		y -= Position.Y+5;
 
-		currentHue = (int)(x / 180.0f * 359.0f);
-		currentSaturation = 255 - (int)(y / 180.0f * 255.0f);
+		currentHue = int((float(x)/float(255))*359.0f);
+		currentSaturation = 255-(y*2);
 
 		if(currentSaturation > 255)
 			currentSaturation = 255;
@@ -250,42 +255,52 @@ void ColourPickerActivity::OnKeyPress(int key, int scan, bool repeat, bool shift
 void ColourPickerActivity::OnDraw()
 {
 	Graphics * g = GetGraphics();
-
-	int currentRed = 0;
-	int currentGreen = 0;
-	int currentBlue = 0;
-	HSV_to_RGB(currentHue, currentSaturation, currentValue, &currentRed, &currentGreen, &currentBlue);
-
-	g->BlendFilledRect(RectSized(Position - Vec2{ 2, 2 }, Size + Vec2{ 3, 3 }), 0x000000_rgb .WithAlpha(currentAlpha));
+	g->BlendFilledRect(RectSized(Position - Vec2{ 1, 1 }, Size + Vec2{ 2, 2 }), 0x000000_rgb .WithAlpha(currentAlpha));
 	g->DrawRect(RectSized(Position, Size), 0xFFFFFF_rgb);
 
-	auto offset = Position + Vec2{ 11, 11 };
+	g->DrawRect(RectSized(Position + Vec2{ 4, 4 }, Vec2{ 258, 130 }), 0xB4B4B4_rgb);
+
+
+	auto offset = Position + Vec2{ 5, 5 };
+
 
 	//draw color square
 	int lastx = -1, currx = 0;
-	for (int saturation = 0; saturation <= 255; saturation++)
+	for(int saturation = 0; saturation <= 255; saturation+=2)
 	{
-		for (int hue = 0; hue <= 359; hue += 2)
+		for(int hue = 0; hue <= 359; hue++)
 		{
-			currx = offset.X + (int)(hue / 359.0f * 180.0f);
+			currx = clamp_flt(float(hue), 0, 359)+offset.X;
 			if (currx == lastx)
 				continue;
 			lastx = currx;
 			int cr = 0;
 			int cg = 0;
 			int cb = 0;
-			HSV_to_RGB(hue, 255 - saturation, currentValue, &cr, &cg, &cb);
-			g->BlendPixel({ currx, offset.Y + (int)(saturation / 255.0f * 180.0f) }, RGBA<uint8_t>(cr, cg, cb, currentAlpha));
+			HSV_to_RGB(hue, 255-saturation, currentValue, &cr, &cg, &cb);
+			g->BlendPixel({ currx, (saturation/2)+offset.Y }, RGBA<uint8_t>(cr, cg, cb, currentAlpha));
 		}
 	}
-	g->BlendRect(RectSized(offset, Vec2{ 180, 180 }), 0xFFFFFF_rgb .WithAlpha(31));
 
-	g->BlendFilledRect(RectSized(offset + Vec2{ 190, 0 }, Vec2{ 30, 206 }), RGBA<uint8_t>(currentRed, currentGreen, currentBlue, currentAlpha));
-	g->BlendRect(RectSized(offset + Vec2{ 190, 0 }, Vec2{ 30, 206 }), 0xFFFFFF_rgb .WithAlpha(31));
+	//Draw hue bar gradient
+	auto gradientWidth = hSlider->Size.X - 10;
+	for (int rx = 0; rx < gradientWidth; rx++)
+	{
+		int red, green, blue;
+		int hue = rx * 360 / gradientWidth;
+		HSV_to_RGB(hue, currentSaturation, currentValue, &red, &green, &blue);
+		for (int ry = 0; ry < (hSlider->Size.Y / 2) - 1; ry++)
+		{
+			g->BlendPixel(
+				offset + hSlider->Position + Vec2{ rx, ry },
+				RGBA<uint8_t>(red, green, blue, currentAlpha)
+			);
+		}
+	}
 
 	//draw color square pointer
-	int currentHueX = (int)(currentHue / 359.0f * 180.f);
-	int currentSaturationY = (int)((255 - currentSaturation) / 255.0f * 180.f);
+	int currentHueX = clamp_flt(float(currentHue), 0, 359);
+	int currentSaturationY = ((255-currentSaturation)/2);
 	g->XorLine(offset + Vec2{ currentHueX, currentSaturationY-5 }, offset + Vec2{ currentHueX, currentSaturationY-1 });
 	g->XorLine(offset + Vec2{ currentHueX, currentSaturationY+1 }, offset + Vec2{ currentHueX, currentSaturationY+5 });
 	g->XorLine(offset + Vec2{ currentHueX-5, currentSaturationY }, offset + Vec2{ currentHueX-1, currentSaturationY });

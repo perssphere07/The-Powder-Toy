@@ -266,7 +266,7 @@ FontEditor::FontEditor(ByteString _dataFile):
 	int baseline = 8 + FONT_H * FONT_SCALE + 4 + FONT_H + 4 + 1;
 	int currentX = 1;
 
-	ui::Button *prev = new ui::Button(ui::Point(currentX, baseline), ui::Point(17, 17), 0xE72B);
+	ui::Button *prev = new ui::Button(ui::Point(currentX, baseline), ui::Point(17, 17), 0xE016);
 	currentX += 18;
 	prev->SetActionCallback({ [this] { PrevChar(); } });
 	AddComponent(prev);
@@ -281,7 +281,7 @@ FontEditor::FontEditor(ByteString _dataFile):
 	UpdateCharNumber();
 	AddComponent(currentCharTextbox);
 
-	ui::Button *next = new ui::Button(ui::Point(currentX, baseline), ui::Point(17, 17), 0xE72A);
+	ui::Button *next = new ui::Button(ui::Point(currentX, baseline), ui::Point(17, 17), 0xE015);
 	currentX += 18;
 	next->SetActionCallback({ [this] { NextChar(); } });
 	AddComponent(next);
@@ -296,7 +296,7 @@ FontEditor::FontEditor(ByteString _dataFile):
 	grow->SetActionCallback({ [this] { GrowChar(); } });
 	AddComponent(grow);
 
-	ui::Button *add = new ui::Button(ui::Point(currentX, baseline), ui::Point(36, 17), 0xE710);
+	ui::Button *add = new ui::Button(ui::Point(currentX, baseline), ui::Point(36, 17), "Add");
 	currentX += 37;
 	add->SetActionCallback({ [this] {
 		if (fontWidths.find(currentChar) == fontWidths.end())
@@ -308,7 +308,7 @@ FontEditor::FontEditor(ByteString _dataFile):
 	} });
 	AddComponent(add);
 
-	ui::Button *remove = new ui::Button(ui::Point(currentX, baseline), ui::Point(36, 17), 0xE74D);
+	ui::Button *remove = new ui::Button(ui::Point(currentX, baseline), ui::Point(36, 17), "Remove");
 	currentX += 37;
 	remove->SetActionCallback({ [this] {
 		if (fontWidths.find(currentChar) != fontWidths.end())
@@ -360,7 +360,7 @@ FontEditor::FontEditor(ByteString _dataFile):
 	render->SetActionCallback({ [this] { Render(); } });
 	AddComponent(render);
 	
-	savedButton = new ui::Button(ui::Point(currentX, baseline), ui::Point(50, 17), 0xE74E);
+	savedButton = new ui::Button(ui::Point(currentX, baseline), ui::Point(50, 17), "Save");
 	currentX += 51;
 	savedButton->SetTogglable(true);
 	savedButton->SetToggleState(true);

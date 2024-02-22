@@ -56,8 +56,6 @@
 #include "gui/dialogues/InformationMessage.h"
 
 #include "eventcompat.lua.h"
-#include "scrptmgr.lua.h"
-#include "multimgr.lua.h"
 
 #include "Config.h"
 #include <vector>
@@ -534,14 +532,6 @@ LuaScriptInterface::LuaScriptInterface(GameController * c, GameModel * m):
 	if (luaL_loadbuffer(l, (const char *)eventcompat_lua, eventcompat_lua_size, "@[built-in eventcompat.lua]") || tpt_lua_pcall(l, 0, 0, 0, false))
 	{
 		throw std::runtime_error(ByteString("failed to load built-in eventcompat: ") + tpt_lua_toByteString(l, -1));
-	}
-	if (luaL_loadbuffer(l, (const char *)scrptmgr_lua, scrptmgr_lua_size, "@[built-in scrptmgr.lua]") || lua_pcall(l, 0, 0, 0))
-	{
-		//Ignore;
-	}
-	if (luaL_loadbuffer(l, (const char *)multimgr_lua, multimgr_lua_size, "@[built-in multimgr.lua]") || lua_pcall(l, 0, 0, 0))
-	{
-		//Ignore;
 	}
 	lua_pop(l, 1);
 }

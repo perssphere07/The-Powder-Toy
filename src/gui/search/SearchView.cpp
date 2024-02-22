@@ -27,9 +27,8 @@ SearchView::SearchView():
 
 	Client::Ref().AddListener(this);
 
-	nextButton = new ui::Button(ui::Point(WINDOWW-51, WINDOWH-18), ui::Point(50, 17), String("Next ") + 0xE72A);
-	previousButton = new ui::Button(ui::Point(1, WINDOWH-18), ui::Point(50, 17), 0xE72B + String(" Prev"));
-	homeButton = new ui::Button(ui::Point(128, 10), ui::Point(17, 17), "");
+	nextButton = new ui::Button(ui::Point(WINDOWW-52, WINDOWH-18), ui::Point(50, 16), String("Next ") + 0xE015);
+	previousButton = new ui::Button(ui::Point(2, WINDOWH-18), ui::Point(50, 16), 0xE016 + String(" Prev"));
 	tagsLabel  = new ui::Label(ui::Point(270, WINDOWH-18), ui::Point(WINDOWW-540, 16), "\boPopular Tags:");
 	try
 	{
@@ -48,39 +47,37 @@ SearchView::SearchView():
 	AddComponent(pageCountLabel);
 	AddComponent(pageTextbox);
 
-	searchField = new ui::Textbox(ui::Point(146, 10), ui::Point(WINDOWW-290, 17), "", "Search for saves, users, and IDs");
+	searchField = new ui::Textbox(ui::Point(60, 10), ui::Point(WINDOWW-238, 17), "", "[search]");
 	searchField->Appearance.icon = IconSearch;
 	searchField->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	searchField->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	searchField->SetActionCallback({ [this] { doSearch(); } });
 	FocusComponent(searchField);
 
-	sortButton = new ui::Button(ui::Point(16, 10), ui::Point(96, 17), "Sort");
-	sortButton->SetIcon(IconSort);
+	sortButton = new ui::Button(ui::Point(WINDOWW-140, 10), ui::Point(61, 17), "Sort");
+	sortButton->SetIcon(IconVoteSort);
 	sortButton->SetTogglable(true);
 	sortButton->SetActionCallback({ [this] { c->ChangeSort(); } });
 	sortButton->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
 	sortButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	sortButton->Appearance.Border = 0;
 	AddComponent(sortButton);
 
-	ownButton = new ui::Button(ui::Point(WINDOWW-112, 10), ui::Point(96, 17), "My saves");
-	ownButton->SetIcon(IconViewAll);
+	ownButton = new ui::Button(ui::Point(WINDOWW-70, 10), ui::Point(61, 17), "My Own");
+	ownButton->SetIcon(IconMyOwn);
 	ownButton->SetTogglable(true);
 	ownButton->SetActionCallback({ [this] { c->ShowOwn(ownButton->GetToggleState()); } });
 	ownButton->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
 	ownButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	ownButton->Appearance.Border = 0;
 	AddComponent(ownButton);
 
-	favButton = new ui::Button(ui::Point(16, 10), ui::Point(96, 17), "Favourites");
-	favButton->SetIcon(IconFavoriteList);
+	favButton = new ui::Button(searchField->Position+ui::Point(searchField->Size.X+15, 0), ui::Point(17, 17), "");
+	favButton->SetIcon(IconFavourite);
 	favButton->SetTogglable(true);
-	favButton->Appearance.Margin.Left+=1;
+	favButton->Appearance.Margin.Left+=2;
 	favButton->SetActionCallback({ [this] { c->ShowFavourite(favButton->GetToggleState()); } });
 	favButton->Appearance.HorizontalAlign = ui::Appearance::AlignCentre;
 	favButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	favButton->Appearance.Border = 0;
+	favButton->Appearance.BorderInactive = ui::Colour(170,170,170);
 	AddComponent(favButton);
 
 	ui::Button * clearSearchButton = new ui::Button(searchField->Position+ui::Point(searchField->Size.X-1, 0), ui::Point(17, 17), "");
@@ -101,15 +98,17 @@ SearchView::SearchView():
 	previousButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	previousButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	previousButton->Visible = false;
-	homeButton->SetActionCallback({ [this] { c->SetPage(1); } });
-	homeButton->SetIcon(IconHome);
 	AddComponent(nextButton);
 	AddComponent(previousButton);
-	AddComponent(homeButton);
 	AddComponent(searchField);
 
 	loadingSpinner = new ui::Spinner(ui::Point((WINDOWW/2)-12, (WINDOWH/2)+12), ui::Point(24, 24));
 	AddComponent(loadingSpinner);
+
+	ui::Label * searchPrompt = new ui::Label(ui::Point(10, 10), ui::Point(50, 16), "Search:");
+	searchPrompt->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	searchPrompt->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
+	AddComponent(searchPrompt);
 
 	removeSelected = new ui::Button(ui::Point(((WINDOWW-415)/2), WINDOWH-18), ui::Point(100, 16), "Delete");
 	removeSelected->Visible = false;
@@ -165,7 +164,7 @@ void SearchView::clearSearch()
 void SearchView::textChanged()
 {
 	int num = pageTextbox->GetText().ToNumber<int>(true);
-	if (num < 0) // 0 is allowed so that you can backspace the 1
+	if (num < 0) //0 is allowed so that you can backspace the 1
 		pageTextbox->SetText("1");
 	else if (num > pageCount)
 		pageTextbox->SetText(String::Build(pageCount));
@@ -211,12 +210,14 @@ void SearchView::NotifySortChanged(SearchModel * sender)
 	if(sender->GetSort() == http::sortByVotes)
 	{
 		sortButton->SetToggleState(false);
-		sortButton->SetText("Sort by votes");
+		sortButton->SetText("By votes");
+		sortButton->SetIcon(IconVoteSort);
 	}
 	else
 	{
 		sortButton->SetToggleState(true);
-		sortButton->SetText("Sort by date");
+		sortButton->SetText("By date");
+		sortButton->SetIcon(IconDateSort);
 	}
 }
 
@@ -280,18 +281,10 @@ void SearchView::NotifyPageChanged(SearchModel * sender)
 	if(sender->GetPageNum() == 1)
 	{
 		previousButton->Visible = false;
-		favButton->Visible = (sender->GetSort() == http::sortByVotes);
-		ownButton->Visible = (sender->GetSort() == http::sortByVotes);
-		sortButton->Visible = !(sender->GetSort() == http::sortByVotes);
-		homeButton->Enabled = false;
 	}
 	else
 	{
 		previousButton->Visible = true;
-		favButton->Visible = false;
-		ownButton->Visible = false;
-		sortButton->Visible = true;
-		homeButton->Enabled = true;
 	}
 	if(sender->GetPageNum() >= sender->GetPageCount())
 	{
@@ -300,9 +293,6 @@ void SearchView::NotifyPageChanged(SearchModel * sender)
 	else
 	{
 		nextButton->Visible = true;
-	}
-	if (sender->GetShowFavourite() || sender->GetShowOwn()) {
-		homeButton->Enabled = false;
 	}
 }
 
@@ -508,7 +498,7 @@ void SearchView::NotifySaveListChanged(SearchModel * sender)
 		}
 		if (!sender->GetSavesLoaded())
 		{
-			errorLabel->SetText("");
+			errorLabel->SetText("Loading...");
 			loadingSpinner->Visible = true;
 		}
 		else

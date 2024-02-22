@@ -17,8 +17,6 @@ namespace style
 
 		static ui::Colour ActiveBackground;
 		static ui::Colour InactiveBackground;
-
-		static ui::Colour Hyperlink;
 	};
 	
 	class Metrics

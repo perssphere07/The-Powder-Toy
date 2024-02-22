@@ -2,10 +2,8 @@
 #include "client/Client.h"
 #include "client/http/LoginRequest.h"
 #include "client/http/LogoutRequest.h"
-#include "common/platform/Platform.h"
 #include "LoginView.h"
 #include "LoginModel.h"
-#include "Config.h"
 #include "Controller.h"
 
 LoginController::LoginController(std::function<void ()> onDone_):
@@ -33,12 +31,6 @@ void LoginController::Logout()
 void LoginController::Tick()
 {
 	loginModel->Tick();
-}
-
-void LoginController::CreateAccount()
-{
-	ByteString uri = ByteString::Build(SCHEME, SERVER, "/Register.html");
-	Platform::OpenURI(uri);
 }
 
 void LoginController::Exit()

@@ -223,207 +223,30 @@ GameView::GameView():
 	scrollBar->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
 	AddComponent(scrollBar);
 
-	appButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(150, 17), "The Powder Toy* 97.0", 
-		"Perssphere's Mod 2.13, The Powder Toy* 97.0"
-	);
-	appButton->SetIcon(IconApp);
-	appButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
-	appButton->Appearance.Margin.Left -= 1;
-	currentX += 151;
-	appButton->SetActionCallback({ [this] { introText = 8047; } });
-	AddComponent(appButton);
-
-	ribbonBar = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(Size.X-290, 17), "", "");
-	ribbonBar->Appearance.BorderDisabled = ui::Colour(200, 200, 200, 255);
-	ribbonBar->Appearance.BackgroundDisabled = ui::Colour(0, 0, 0, 0);
-	ribbonBar->Enabled = false;
-	AddComponent(ribbonBar);
-
-	clearSimulationButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Erase everything");
-	clearSimulationButton->SetIcon(IconNew);
-	clearSimulationButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	clearSimulationButton->Appearance.Border = false;
-	clearSimulationButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	clearSimulationButton->SetActionCallback({ [this] { c->ClearSim(); } });
-	AddComponent(clearSimulationButton);
-
-	openSimulationButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Open local simulation");
-	openSimulationButton->SetIcon(IconOpen);
-	openSimulationButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	openSimulationButton->Appearance.Border = false;
-	openSimulationButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	openSimulationButton->SetActionCallback({ [this] { c->OpenLocalBrowse(); } });
-	AddComponent(openSimulationButton);
-
-	saveSimulationButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Save local simulation");
-	saveSimulationButton->SetIcon(IconSave);
-	saveSimulationButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	saveSimulationButton->Appearance.Border = false;
-	saveSimulationButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	saveSimulationButton->SetActionCallback({ [this] { c->OpenLocalSaveWindow(true); } });
-	AddComponent(saveSimulationButton);
-
-	undoButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Undo");
-	undoButton->SetIcon(IconUndo);
-	undoButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	undoButton->Appearance.Border = false;
-	undoButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	undoButton->SetActionCallback({ [this] { c->HistoryRestore(); } });
-	AddComponent(undoButton);
-
-	redoButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Redo");
-	redoButton->SetIcon(IconRedo);
-	redoButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	redoButton->Appearance.Border = false;
-	redoButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	redoButton->SetActionCallback({ [this] { c->HistoryForward(); } });
-	AddComponent(redoButton);
-
-	copyButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Copy");
-	copyButton->SetIcon(IconCopy);
-	copyButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	copyButton->Appearance.Border = false;
-	copyButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	copyButton->SetActionCallback({ [this] { 
-		selectMode = SelectCopy;
-		selectPoint1 = selectPoint2 = ui::Point(-1, -1);
-		isMouseDown = false;
-		buttonTip = "\x0F\xEF\xEF\020Click-and-drag to specify an area to copy (right click = cancel)";
-		buttonTipShow = 120; 
-	} });
-	AddComponent(copyButton);
-	
-	cutButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Cut");
-	cutButton->SetIcon(IconCut);
-	cutButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	cutButton->Appearance.Border = false;
-	cutButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	cutButton->SetActionCallback({ [this] { 
-		selectMode = SelectCut;
-		selectPoint1 = selectPoint2 = ui::Point(-1, -1);
-		isMouseDown = false;
-		buttonTip = "\x0F\xEF\xEF\020Click-and-drag to specify an area to copy then cut (right click = cancel)";
-		buttonTipShow = 120;
-	} });
-	AddComponent(cutButton);
-
-	pasteButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Paste");
-	pasteButton->SetIcon(IconPaste);
-	pasteButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	pasteButton->Appearance.Border = false;
-	pasteButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	pasteButton->SetActionCallback({ [this] { 
-		if (c->LoadClipboard()) {
-			selectPoint1 = selectPoint2 = mousePosition;
-			isMouseDown = false;
-		}
-	} });
-	AddComponent(pasteButton);
-
-	createStampButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Create New Stamp");
-	createStampButton->SetIcon(IconStamp);
-	createStampButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	createStampButton->Appearance.Border = false;
-	createStampButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	createStampButton->SetActionCallback({ [this] { GameView::BeginStampSelection(); } });
-	AddComponent(createStampButton);
-
-	useStampButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Paste the last Stamp");
-	useStampButton->SetIcon(IconUseStamp);
-	useStampButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	useStampButton->Appearance.Border = false;
-	useStampButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	useStampButton->SetActionCallback({ [this] { 
-		auto &stampIDs = Client::Ref().GetStamps();
-		if (stampIDs.size())
-		{
-			auto saveFile = Client::Ref().GetStamp(stampIDs[0]);
-			if (!(!saveFile || !saveFile->GetGameSave()))
-			{
-				c->LoadStamp(saveFile->TakeGameSave());
-				selectPoint1 = selectPoint2 = mousePosition;
-				isMouseDown = false;
-			}
-		}
-	} });
-	AddComponent(useStampButton);
-
-	stampBrowserButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Browse the stamps");
-	stampBrowserButton->SetIcon(IconClipboard);
-	stampBrowserButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	stampBrowserButton->Appearance.Border = false;
-	stampBrowserButton->Appearance.Margin.Top += 4;
-	currentX += 18;
-	stampBrowserButton->SetActionCallback({ [this] { 
-		selectMode = SelectNone;
-		selectPoint1 = selectPoint2 = ui::Point(-1, -1);
-		c->OpenStamps();
-	} });
-	AddComponent(stampBrowserButton);
-
-	findButton = new ui::Button(ui::Point(currentX, Size.Y-36), ui::Point(17, 17), "", "Find the element");  // Find
-	findButton->SetIcon(IconSearch);
-	findButton->Appearance.BackgroundHover = ui::Colour(64, 64, 64, 255);
-	findButton->Appearance.Border = false;
-	findButton->SetTogglable(true);
-	findButton->Appearance.Margin.Top += 1;
-	currentX += 18;
-	findButton->SetActionCallback({ [this] {
-		auto findingElementCandidate = FindingElementCandidate();
-		if (ren->findingElement == findingElementCandidate)
-		{
-			ren->findingElement = std::nullopt;
-		}
-		else
-		{
-			ren->findingElement = findingElementCandidate;
-		}
-		NotifyFindModeChanged();
-	} });
-	AddComponent(findButton);
-
-	debugButton = new ui::Button(ui::Point(Size.X-137, Size.Y-36), ui::Point(17, 17), "", "Toggle debug HUD");  // Toggle Debug HUD
-	debugButton->SetIcon(IconDebug);
-	debugButton->SetTogglable(true);
-	debugButton->Appearance.Margin.Top += 4;
-	debugButton->SetActionCallback({ [this] { GameView::SetDebugHUD(debugButton->GetToggleState()); } });
-	AddComponent(debugButton);
-
-	loginButton = new SplitButton(ui::Point(Size.X-119, Size.Y-36), ui::Point(100, 17), "[sign in]", "Sign into simulation server", "Edit Profile", 17);
-	loginButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
-	loginButton->Appearance.Margin.Left -= 1;
-	loginButton->SetIcon(IconContact);
-	loginButton->SetSplitActionCallback({
-		[this] { c->OpenLogin(); },
-		[this] { c->OpenProfile(); }
-	});
-	AddComponent(loginButton);
-
-	currentX = 1;
-
-	searchButton = new ui::Button(ui::Point(currentX, Size.Y-18), ui::Point(17, 17), "", "Find & open a simulation.");
-	searchButton->SetIcon(IconGlobe);
+	searchButton = new ui::Button(ui::Point(currentX, Size.Y-16), ui::Point(17, 15), "", "Find & open a simulation. Hold Ctrl to load offline saves.");  //Open
+	searchButton->SetIcon(IconOpen);
 	currentX+=18;
 	searchButton->SetTogglable(false);
-	searchButton->SetActionCallback({ [this] { c->OpenSearch(""); } });
+	searchButton->SetActionCallback({ [this] {
+		if (CtrlBehaviour())
+			c->OpenLocalBrowse();
+		else
+			c->OpenSearch("");
+	} });
 	AddComponent(searchButton);
 
-	saveUploadSimulationButton = new SplitButton(ui::Point(currentX, Size.Y-18), ui::Point(150, 17), "[untitled simulation]", "", "", 19);
-	saveUploadSimulationButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
-	saveUploadSimulationButton->SetIcon(IconUpload);
-	saveUploadSimulationButton->Appearance.Margin.Left -= 1;
+	reloadButton = new ui::Button(ui::Point(currentX, Size.Y-16), ui::Point(17, 15), "", "Reload the simulation");
+	reloadButton->SetIcon(IconReload);
+	reloadButton->Appearance.Margin.Left+=2;
+	currentX+=18;
+	reloadButton->SetActionCallback({ [this] { c->ReloadSim(); }, [this] { c->OpenSavePreview(); } });
+	AddComponent(reloadButton);
+
+	saveSimulationButton = new SplitButton(ui::Point(currentX, Size.Y-16), ui::Point(150, 15), "[untitled simulation]", "", "", 19);
+	saveSimulationButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	saveSimulationButton->SetIcon(IconSave);
 	currentX+=151;
-	saveUploadSimulationButton->SetSplitActionCallback({
+	saveSimulationButton->SetSplitActionCallback({
 		[this] {
 			if (CtrlBehaviour() || !Client::Ref().GetAuthUser().UserID)
 				c->OpenLocalSaveWindow(true);
@@ -438,76 +261,68 @@ GameView::GameView():
 		}
 	});
 	SetSaveButtonTooltips();
-	AddComponent(saveUploadSimulationButton);
+	AddComponent(saveSimulationButton);
 
-	upVoteButton = new ui::Button(ui::Point(currentX, Size.Y-18), ui::Point(17, 17), "", "Like this save");
+	upVoteButton = new ui::Button(ui::Point(currentX, Size.Y-16), ui::Point(39, 15), "", "Like this save");
 	upVoteButton->SetIcon(IconVoteUp);
-	upVoteButton->Appearance.Margin.Top += 4;
-	upVoteButton->Appearance.Margin.Left += 1;
-	currentX+=16;
+	upVoteButton->Appearance.Margin.Top+=2;
+	upVoteButton->Appearance.Margin.Left+=2;
+	currentX+=38;
 	AddComponent(upVoteButton);
 
-	downVoteButton = new ui::Button(ui::Point(currentX, Size.Y-18), ui::Point(17, 17), "", "Dislike this save");
+	downVoteButton = new ui::Button(ui::Point(currentX, Size.Y-16), ui::Point(15, 15), "", "Dislike this save");
 	downVoteButton->SetIcon(IconVoteDown);
-	downVoteButton->Appearance.Margin.Top += 4;
-	downVoteButton->Appearance.Margin.Left += 1;
-	currentX+=18;
+	downVoteButton->Appearance.Margin.Bottom+=2;
+	downVoteButton->Appearance.Margin.Left+=2;
+	currentX+=16;
 	AddComponent(downVoteButton);
 
-	reloadButton = new ui::Button(ui::Point(currentX, Size.Y-18), ui::Point(17, 17), "", "Reload the simulation");
-	reloadButton->SetIcon(IconReload);
-	reloadButton->Appearance.Margin.Top += 4;
-	currentX+=18;
-	reloadButton->SetActionCallback({ [this] { c->ReloadSim(); }, [this] { c->OpenSavePreview(); } });
-	AddComponent(reloadButton);
-
-	tagSimulationButton = new ui::Button(ui::Point(currentX, Size.Y-18), ui::Point(285, 17), "[no tags set]", "Add simulation tags");
+	tagSimulationButton = new ui::Button(ui::Point(currentX, Size.Y-16), ui::Point(227, 15), "[no tags set]", "Add simulation tags");
 	tagSimulationButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	tagSimulationButton->SetIcon(IconTag);
-	tagSimulationButton->Appearance.Margin.Left -= 1;
-	// currentX+=305;
+	//currentX+=252;
 	tagSimulationButton->SetActionCallback({ [this] { c->OpenTags(); } });
 	AddComponent(tagSimulationButton);
 
-	showConsoleButton = new ui::Button(ui::Point(Size.X-86, Size.Y-18), ui::Point(17, 17), "", "Show Lua console");
-	showConsoleButton->SetIcon(IconConsole);
-	showConsoleButton->Appearance.Margin.Top += 4;
-	showConsoleButton->SetActionCallback({ [this] {c->ShowConsole(); } });
-	AddComponent(showConsoleButton);
+	clearSimButton = new ui::Button(ui::Point(Size.X-159, Size.Y-16), ui::Point(17, 15), "", "Erase everything");
+	clearSimButton->SetIcon(IconNew);
+	clearSimButton->Appearance.Margin.Left+=2;
+	clearSimButton->SetActionCallback({ [this] { c->ClearSim(); } });
+	AddComponent(clearSimButton);
 
-	simulationOptionButton = new ui::Button(ui::Point(Size.X-68, Size.Y-18), ui::Point(17, 17), "", "Simulation options");
+	loginButton = new SplitButton(ui::Point(Size.X-141, Size.Y-16), ui::Point(92, 15), "[sign in]", "Sign into simulation server", "Edit Profile", 19);
+	loginButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
+	loginButton->SetIcon(IconLogin);
+	loginButton->SetSplitActionCallback({
+		[this] { c->OpenLogin(); },
+		[this] { c->OpenProfile(); }
+	});
+	AddComponent(loginButton);
+
+	simulationOptionButton = new ui::Button(ui::Point(Size.X-48, Size.Y-16), ui::Point(15, 15), "", "Simulation options");
 	simulationOptionButton->SetIcon(IconSimulationSettings);
-	simulationOptionButton->Appearance.Margin.Top += 4;
-	simulationOptionButton->Appearance.Margin.Left += 1;
+	simulationOptionButton->Appearance.Margin.Left+=2;
 	simulationOptionButton->SetActionCallback({ [this] { c->OpenOptions(); } });
 	AddComponent(simulationOptionButton);
 
-	displayModeButton = new ui::Button(ui::Point(Size.X-52, Size.Y-18), ui::Point(17, 17), "", "Rendering options");
+	displayModeButton = new ui::Button(ui::Point(Size.X-32, Size.Y-16), ui::Point(15, 15), "", "Renderer options");
 	displayModeButton->SetIcon(IconRenderSettings);
-	displayModeButton->Appearance.Margin.Top += 4;
-	displayModeButton->Appearance.Margin.Left += 1;
+	displayModeButton->Appearance.Margin.Left+=2;
 	displayModeButton->SetActionCallback({ [this] { c->OpenRenderOptions(); } });
 	AddComponent(displayModeButton);
 
-	frameButton = new ui::Button(ui::Point(Size.X-34, Size.Y-18), ui::Point(17, 17), "", "Pause and go to next frame");  // Frame
-	frameButton->SetIcon(IconFastForward);
-	frameButton->Appearance.Margin.Top += 4;
-	frameButton->SetActionCallback({ [this] { c->FrameStep(); } });
-	AddComponent(frameButton);
-
-	pauseButton = new ui::Button(ui::Point(Size.X-18, Size.Y-18), ui::Point(17, 17), "", "Pause/Resume the simulation");  // Pause
+	pauseButton = new ui::Button(ui::Point(Size.X-16, Size.Y-16), ui::Point(15, 15), "", "Pause/Resume the simulation");  //Pause
 	pauseButton->SetIcon(IconPause);
 	pauseButton->SetTogglable(true);
-	pauseButton->Appearance.Margin.Top += 4;
 	pauseButton->SetActionCallback({ [this] { c->SetPaused(pauseButton->GetToggleState()); } });
 	AddComponent(pauseButton);
 
-	ui::Button * tempButton = new ui::Button(ui::Point(289, WINDOWH-54), ui::Point(17, 17), 0xE721, "Search for elements");
-	tempButton->Appearance.Margin = ui::Border(2, 2, 2, 2);
+	ui::Button * tempButton = new ui::Button(ui::Point(WINDOWW-16, WINDOWH-32), ui::Point(15, 15), 0xE065, "Search for elements");
+	tempButton->Appearance.Margin = ui::Border(0, 2, 3, 2);
 	tempButton->SetActionCallback({ [this] { c->OpenElementSearch(); } });
 	AddComponent(tempButton);
 
-	colourPicker = new ui::Button(ui::Point((XRES/2)-8, YRES+1), ui::Point(17, 17), "", "Pick Colour");
+	colourPicker = new ui::Button(ui::Point((XRES/2)-8, YRES+1), ui::Point(16, 16), "", "Pick Colour");
 	colourPicker->SetActionCallback({ [this] { c->OpenColourPicker(); } });
 }
 
@@ -554,11 +369,12 @@ void GameView::NotifyQuickOptionsChanged(GameModel * sender)
 		delete quickOptionButtons[i];
 	}
 
-	int currentX = WINDOWW - 90;
+	int currentY = 1;
 	std::vector<QuickOption*> optionList = sender->GetQuickOptions();
 	for(auto *option : optionList)
 	{
-		ui::Button * tempButton = new ui::Button(ui::Point(currentX, WINDOWH-54), ui::Point(17, 17), option->GetIcon(), option->GetDescription());
+		ui::Button * tempButton = new ui::Button(ui::Point(WINDOWW-16, currentY), ui::Point(15, 15), option->GetIcon(), option->GetDescription());
+		//tempButton->Appearance.Margin = ui::Border(0, 2, 3, 2);
 		tempButton->SetTogglable(true);
 		tempButton->SetActionCallback({ [option] {
 			option->Perform();
@@ -567,13 +383,13 @@ void GameView::NotifyQuickOptionsChanged(GameModel * sender)
 		AddComponent(tempButton);
 
 		quickOptionButtons.push_back(tempButton);
-		currentX += 18;
+		currentY += 16;
 	}
 }
 
 void GameView::NotifyMenuListChanged(GameModel * sender)
 {
-	int currentX = 1; // -(sender->GetMenuList().size()*16);
+	int currentY = WINDOWH-48;//-(sender->GetMenuList().size()*16);
 	for (size_t i = 0; i < menuButtons.size(); i++)
 	{
 		RemoveComponent(menuButtons[i]);
@@ -587,7 +403,7 @@ void GameView::NotifyMenuListChanged(GameModel * sender)
 	}
 	toolButtons.clear();
 	std::vector<Menu*> menuList = sender->GetMenuList();
-	for (int i = 0; i < (int)menuList.size(); i++)
+	for (int i = (int)menuList.size()-1; i >= 0; i--)
 	{
 		if (menuList[i]->GetVisible())
 		{
@@ -596,8 +412,8 @@ void GameView::NotifyMenuListChanged(GameModel * sender)
 			String description = menuList[i]->GetDescription();
 			if (i == SC_FAVORITES && !Favorite::Ref().AnyFavorites())
 				description += " (Use ctrl+shift+click to toggle the favorite status of an element)";
-			auto *tempButton = new MenuButton(ui::Point(currentX, WINDOWH-54), ui::Point(17, 17), tempString, description);
-			tempButton->Appearance.Margin = ui::Border(2, 2, 2, 2);
+			auto *tempButton = new MenuButton(ui::Point(WINDOWW-16, currentY), ui::Point(15, 15), tempString, description);
+			tempButton->Appearance.Margin = ui::Border(0, 2, 3, 2);
 			tempButton->menuID = i;
 			tempButton->needsClick = i == SC_DECO;
 			tempButton->SetTogglable(true);
@@ -615,7 +431,7 @@ void GameView::NotifyMenuListChanged(GameModel * sender)
 					mouseEnterCallback();
 			};
 			tempButton->SetActionCallback({ actionCallback, nullptr, mouseEnterCallback });
-			currentX+=18;
+			currentY-=16;
 			AddComponent(tempButton);
 			menuButtons.push_back(tempButton);
 		}
@@ -652,8 +468,6 @@ void GameView::SetDebugHUD(bool mode)
 	showDebug = mode;
 	if (ren)
 		ren->debugLines = showDebug;
-
-	GameView::NotifyDebugHUDChanged();
 }
 
 bool GameView::GetDebugHUD()
@@ -754,7 +568,7 @@ void GameView::NotifyToolListChanged(GameModel * sender)
 		tempButton->ClipRect = RectSized(Vec2(1, RES.Y + 1), Vec2(RES.X - 1, 18));
 
 		//currentY -= 17;
-		currentX += 31;
+		currentX -= 31;
 		tempButton->tool = tool;
 		tempButton->SetActionCallback({ [this, tempButton] {
 			auto *tool = tempButton->tool;
@@ -966,11 +780,11 @@ void GameView::NotifySaveChanged(GameModel * sender)
 		if (introText > 50)
 			introText = 50;
 
-		saveUploadSimulationButton->SetText(sender->GetSave()->GetName());
+		saveSimulationButton->SetText(sender->GetSave()->GetName());
 		if (sender->GetSave()->GetUserName() == sender->GetUser().Username)
-			saveUploadSimulationButton->SetShowSplit(true);
+			saveSimulationButton->SetShowSplit(true);
 		else
-			saveUploadSimulationButton->SetShowSplit(false);
+			saveSimulationButton->SetShowSplit(false);
 		reloadButton->Enabled = true;
 		upVoteButton->Enabled = sender->GetSave()->GetID() && sender->GetUser().UserID && sender->GetUser().Username != sender->GetSave()->GetUserName();
 		if(sender->GetSave()->GetID() && sender->GetUser().UserID && sender->GetSave()->GetVote()==1)
@@ -1053,10 +867,10 @@ void GameView::NotifySaveChanged(GameModel * sender)
 	else if (sender->GetSaveFile())
 	{
 		if (ctrlBehaviour)
-			saveUploadSimulationButton->SetShowSplit(true);
+			saveSimulationButton->SetShowSplit(true);
 		else
-			saveUploadSimulationButton->SetShowSplit(false);
-		saveUploadSimulationButton->SetText(sender->GetSaveFile()->GetDisplayName());
+			saveSimulationButton->SetShowSplit(false);
+		saveSimulationButton->SetText(sender->GetSaveFile()->GetDisplayName());
 		reloadButton->Enabled = true;
 		upVoteButton->Enabled = false;
 		upVoteButton->Appearance.BackgroundDisabled = (ui::Colour(0, 0, 0));
@@ -1070,8 +884,8 @@ void GameView::NotifySaveChanged(GameModel * sender)
 	}
 	else
 	{
-		saveUploadSimulationButton->SetShowSplit(false);
-		saveUploadSimulationButton->SetText("[untitled simulation]");
+		saveSimulationButton->SetShowSplit(false);
+		saveSimulationButton->SetText("[untitled simulation]");
 		reloadButton->Enabled = false;
 		upVoteButton->Enabled = false;
 		upVoteButton->Appearance.BackgroundDisabled = (ui::Colour(0, 0, 0));
@@ -1083,23 +897,13 @@ void GameView::NotifySaveChanged(GameModel * sender)
 		tagSimulationButton->SetText("[no tags set]");
 		currentSaveType = 0;
 	}
-	saveUploadSimulationButton->Enabled = (saveSimulationButtonEnabled && saveReuploadAllowed) || ctrlBehaviour;
+	saveSimulationButton->Enabled = (saveSimulationButtonEnabled && saveReuploadAllowed) || ctrlBehaviour;
 	SetSaveButtonTooltips();
 }
 
 void GameView::NotifyBrushChanged(GameModel * sender)
 {
 	activeBrush = &sender->GetBrush();
-}
-
-void GameView::NotifyFindModeChanged()
-{
-	findButton->SetToggleState(ren->findingElement != std::nullopt);
-}
-
-void GameView::NotifyDebugHUDChanged()
-{
-	debugButton->SetToggleState(GetDebugHUD());
 }
 
 ByteString GameView::TakeScreenshot(int captureUI, int fileType)
@@ -1200,12 +1004,12 @@ void GameView::updateToolButtonScroll()
 
 		int offsetDelta = 0;
 
-		int newInitialX = 5;
+		int newInitialX = WINDOWW - 56;
 		int totalWidth = (toolButtons[0]->Size.X + 1) * toolButtons.size();
-		int scrollSize = (int)((XRES - 2) * (XRES - 2) / (float)totalWidth);
+		int scrollSize = (int)(((float)(XRES - BARSIZE))/((float)totalWidth) * ((float)XRES - BARSIZE));
 
-		if (scrollSize > XRES + 2)
-			scrollSize = XRES - 2;
+		if (scrollSize > XRES - 1)
+			scrollSize = XRES - 1;
 		
 		if (totalWidth > XRES - 15)
 		{			
@@ -1224,10 +1028,10 @@ void GameView::updateToolButtonScroll()
 
 			scrollBar->Position.X = (int)(((float)mouseX / (float)XRES) * (float)(XRES - scrollSize)) + 1;
 
-			overflow = (float)(totalWidth - XRES + 10);
-			mouseLocation = XRES / (float)(XRES - mouseX); // mouseLocation adjusted slightly in case you have 200 elements in one menu
+			overflow = (float)(totalWidth - (XRES - BARSIZE));
+			mouseLocation = (float)(XRES - 3)/(float)((XRES - 2) - mouseX); // mouseLocation adjusted slightly in case you have 200 elements in one menu
 
-			newInitialX += (int)(overflow / mouseLocation - overflow);
+			newInitialX += (int)(overflow/mouseLocation);
 		}
 		else
 		{
@@ -1241,10 +1045,6 @@ void GameView::updateToolButtonScroll()
 		for (auto *button : toolButtons)
 		{
 			button->Position.X -= offsetDelta;
-			if (button->Position.X + button->Size.X <= 0 || (button->Position.X) >= XRES)
-				button->Visible = false;
-			else
-				button->Visible = true;
 		}
 
 		// Ensure that mouseLeave events are make their way to the buttons should they move from underneath the mouse pointer
@@ -1570,8 +1370,6 @@ void GameView::OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl,
 	bool didKeyShortcut = true;
 	switch(scan)
 	{
-	case SDL_SCANCODE_RETURN:
-	case SDL_SCANCODE_SLASH:
 	case SDL_SCANCODE_GRAVE:
 		c->ShowConsole();
 		break;
@@ -1642,7 +1440,6 @@ void GameView::OnKeyPress(int key, int scan, bool repeat, bool shift, bool ctrl,
 			{
 				ren->findingElement = findingElementCandidate;
 			}
-			NotifyFindModeChanged();
 		}
 		else
 			c->FrameStep();
@@ -2112,7 +1909,7 @@ void GameView::NotifyNotificationsChanged(GameModel * sender)
 		AddComponent(tempButton);
 		notificationComponents.push_back(tempButton);
 
-		tempButton = new ui::Button(ui::Point(XRES-20, currentY), ui::Point(17, 17), 0xE02A);
+		tempButton = new ui::Button(ui::Point(XRES-20, currentY), ui::Point(15, 15), 0xE02A);
 		//tempButton->SetIcon(IconClose);
 		auto closeNotification = [this, notification] {
 			c->RemoveNotification(notification);
@@ -2235,10 +2032,10 @@ void GameView::enableCtrlBehaviour()
 		UpdateToolStrength();
 
 		//Show HDD save & load buttons
-		saveUploadSimulationButton->Appearance.BackgroundInactive = saveUploadSimulationButton->Appearance.BackgroundHover = ui::Colour(255, 255, 255);
-		saveUploadSimulationButton->Appearance.TextInactive = saveUploadSimulationButton->Appearance.TextHover = ui::Colour(0, 0, 0);
+		saveSimulationButton->Appearance.BackgroundInactive = saveSimulationButton->Appearance.BackgroundHover = ui::Colour(255, 255, 255);
+		saveSimulationButton->Appearance.TextInactive = saveSimulationButton->Appearance.TextHover = ui::Colour(0, 0, 0);
 
-		saveUploadSimulationButton->Enabled = true;
+		saveSimulationButton->Enabled = true;
 		SetSaveButtonTooltips();
 
 		searchButton->Appearance.BackgroundInactive = searchButton->Appearance.BackgroundHover = ui::Colour(255, 255, 255);
@@ -2246,7 +2043,7 @@ void GameView::enableCtrlBehaviour()
 
 		searchButton->SetToolTip("Open a simulation from your hard drive.");
 		if (currentSaveType == 2)
-			saveUploadSimulationButton->SetShowSplit(true);
+			saveSimulationButton->SetShowSplit(true);
 	}
 }
 
@@ -2260,17 +2057,17 @@ void GameView::disableCtrlBehaviour()
 		UpdateToolStrength();
 
 		//Hide HDD save & load buttons
-		saveUploadSimulationButton->Appearance.BackgroundInactive = ui::Colour(0, 0, 0);
-		saveUploadSimulationButton->Appearance.BackgroundHover = ui::Colour(20, 20, 20);
-		saveUploadSimulationButton->Appearance.TextInactive = saveUploadSimulationButton->Appearance.TextHover = ui::Colour(255, 255, 255);
-		saveUploadSimulationButton->Enabled = saveSimulationButtonEnabled && saveReuploadAllowed;
+		saveSimulationButton->Appearance.BackgroundInactive = ui::Colour(0, 0, 0);
+		saveSimulationButton->Appearance.BackgroundHover = ui::Colour(20, 20, 20);
+		saveSimulationButton->Appearance.TextInactive = saveSimulationButton->Appearance.TextHover = ui::Colour(255, 255, 255);
+		saveSimulationButton->Enabled = saveSimulationButtonEnabled && saveReuploadAllowed;
 		SetSaveButtonTooltips();
 		searchButton->Appearance.BackgroundInactive = ui::Colour(0, 0, 0);
 		searchButton->Appearance.BackgroundHover = ui::Colour(20, 20, 20);
 		searchButton->Appearance.TextInactive = searchButton->Appearance.TextHover = ui::Colour(255, 255, 255);
 		searchButton->SetToolTip("Find & open a simulation. Hold Ctrl to load offline saves.");
 		if (currentSaveType == 2)
-			saveUploadSimulationButton->SetShowSplit(false);
+			saveSimulationButton->SetShowSplit(false);
 	}
 }
 
@@ -2304,13 +2101,13 @@ void GameView::UpdateToolStrength()
 void GameView::SetSaveButtonTooltips()
 {
 	if (!Client::Ref().GetAuthUser().UserID)
-		saveUploadSimulationButton->SetToolTips("Overwrite the open simulation on your hard drive.", "Save the simulation to your hard drive. Login to save online.");
+		saveSimulationButton->SetToolTips("Overwrite the open simulation on your hard drive.", "Save the simulation to your hard drive. Login to save online.");
 	else if (ctrlBehaviour)
-		saveUploadSimulationButton->SetToolTips("Overwrite the open simulation on your hard drive.", "Save the simulation to your hard drive.");
-	else if (saveUploadSimulationButton->GetShowSplit())
-		saveUploadSimulationButton->SetToolTips("Re-upload the current simulation", "Modify simulation properties");
+		saveSimulationButton->SetToolTips("Overwrite the open simulation on your hard drive.", "Save the simulation to your hard drive.");
+	else if (saveSimulationButton->GetShowSplit())
+		saveSimulationButton->SetToolTips("Re-upload the current simulation", "Modify simulation properties");
 	else
-		saveUploadSimulationButton->SetToolTips("Re-upload the current simulation", "Upload a new simulation. Hold Ctrl to save offline.");
+		saveSimulationButton->SetToolTips("Re-upload the current simulation", "Upload a new simulation. Hold Ctrl to save offline.");
 }
 
 void GameView::OnDraw()
@@ -2470,7 +2267,7 @@ void GameView::OnDraw()
 
 	if (recording)
 	{
-		String sampleInfo = String::Build("#", screenshotIndex, " ", String(0xE7C8), " REC");
+		String sampleInfo = String::Build("#", screenshotIndex, " ", String(0xE00E), " REC");
 
 		int textWidth = Graphics::TextSize(sampleInfo).X - 1;
 		g->BlendFilledRect(RectSized(Vec2{ XRES-20-textWidth, 12 }, Vec2{ textWidth+8, 15 }), 0x000000_rgb .WithAlpha(127));

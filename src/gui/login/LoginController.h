@@ -16,7 +16,6 @@ public:
 	void Login(ByteString username, ByteString password);
 	void Logout();
 	void Tick();
-	void CreateAccount();
 	void Exit();
 	LoginView * GetView() { return loginView; }
 	~LoginController();

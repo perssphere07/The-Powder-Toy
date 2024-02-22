@@ -46,7 +46,7 @@ inline ByteString VersionInfo()
 inline ByteString IntroText()
 {
 	ByteStringBuilder sb;
-	sb << "\blPerssphere's Mod " << DISPLAY_VERSION[0] << "." << DISPLAY_VERSION[1] << ", \bU" << APPNAME << "*\bU " << UPSTREAM_VERSION.displayVersion[0] << "." << UPSTREAM_VERSION.displayVersion[1] << " - https://powdertoy.co.uk, irc.libera.chat #powder, https://tpt.io/discord\n"
+	sb << "\bl\bU" << APPNAME << "\bU - Version " << DISPLAY_VERSION[0] << "." << DISPLAY_VERSION[1] << " - https://powdertoy.co.uk, irc.libera.chat #powder, https://tpt.io/discord\n"
 	      "\n"
 	      "\n"
 	      "\bgControl+C/V/X are Copy, Paste and cut respectively.\n"
@@ -68,7 +68,6 @@ inline ByteString IntroText()
 	      "Contributors: \bgStanislaw K Skowronek (Designed the original Powder Toy),\n"
 	      "\bgSimon Robertshaw, Skresanov Savely, cracker64, Catelite, Victoria Hoyle, Nathan Cousins, jacksonmj,\n"
 	      "\bgFelix Wallin, Lieuwe Mosch, Anthony Boot, Me4502, MaksProg, jacob1, mniip, LBPHacker\n"
-	      "\boModder: \bgPerssphere\n"
 	      "\n";
 	if constexpr (BETA)
 	{

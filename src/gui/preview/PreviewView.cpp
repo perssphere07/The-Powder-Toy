@@ -83,14 +83,14 @@ PreviewView::PreviewView(std::unique_ptr<VideoBuffer> newSavePreview):
 	openButton = new ui::Button(ui::Point(0, Size.Y-19), ui::Point(51, 19), "Open");
 	openButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	openButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	openButton->SetIcon(IconDownload);
+	openButton->SetIcon(IconOpen);
 	openButton->SetActionCallback({ [this] { c->DoOpen(); } });
 	AddComponent(openButton);
 
 	browserOpenButton = new ui::Button(ui::Point((XRES/2)-107, Size.Y-19), ui::Point(108, 19), "Open in browser");
 	browserOpenButton->Appearance.HorizontalAlign = ui::Appearance::AlignLeft;
 	browserOpenButton->Appearance.VerticalAlign = ui::Appearance::AlignMiddle;
-	browserOpenButton->SetIcon(IconGlobe);
+	browserOpenButton->SetIcon(IconOpen);
 	browserOpenButton->SetActionCallback({ [this] { c->OpenInBrowser(); } });
 	AddComponent(browserOpenButton);
 

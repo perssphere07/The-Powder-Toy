@@ -388,7 +388,7 @@ void ServerSaveActivity::OnTick(float dt)
 void ServerSaveActivity::OnDraw()
 {
 	Graphics * g = GetGraphics();
-	g->BlendRGBAImage(saveToServerImage->data(), RectSized(Vec2(-40, 0), saveToServerImage->Size()));
+	g->BlendRGBAImage(saveToServerImage->data(), RectSized(Vec2(-10, 0), saveToServerImage->Size()));
 	g->DrawFilledRect(RectSized(Position, Size).Inset(-1), 0x000000_rgb);
 	g->DrawRect(RectSized(Position, Size), 0xFFFFFF_rgb);
 

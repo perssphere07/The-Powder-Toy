@@ -175,11 +175,191 @@ void Graphics::draw_icon(int x, int y, Icon icon, unsigned char alpha, bool inve
 	y--;
 	switch(icon)
 	{
+	case IconOpen:
+		if(invert)
+			BlendChar({ x, y }, 0xE001, 0x000000_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y }, 0xE001, 0xFFFFFF_rgb .WithAlpha(alpha));
+		break;
+	case IconReload:
+		if(invert)
+			BlendChar({ x, y }, 0xE011, 0x000000_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y }, 0xE011, 0xFFFFFF_rgb .WithAlpha(alpha));
+		break;
+	case IconSave:
+		if(invert)
+			BlendChar({ x, y }, 0xE002, 0x000000_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y }, 0xE002, 0xFFFFFF_rgb .WithAlpha(alpha));
+		break;
+	case IconVoteUp:
+		if(invert)
+		{
+			BlendChar({ x-11, y+1 }, 0xE04B, 0x006400_rgb .WithAlpha(alpha));
+			BlendText({ x+2, y+1 }, "Vote", 0x006400_rgb .WithAlpha(alpha));
+		}
+		else
+		{
+			BlendChar({ x-11, y+1 }, 0xE04B, 0x00BB12_rgb .WithAlpha(alpha));
+			BlendText({ x+2, y+1 }, "Vote", 0x00BB12_rgb .WithAlpha(alpha));
+		}
+		break;
+	case IconVoteDown:
+		if(invert)
+			BlendChar({ x, y }, 0xE04A, 0x640A00_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y }, 0xE04A, 0xBB2800_rgb .WithAlpha(alpha));
+		break;
+	case IconTag:
+		if(invert)
+			BlendChar({ x, y }, 0xE003, 0x000000_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y }, 0xE003, 0xFFFFFF_rgb .WithAlpha(alpha));
+		break;
+	case IconNew:
+		if(invert)
+			BlendChar({ x, y }, 0xE012, 0x000000_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y }, 0xE012, 0xFFFFFF_rgb .WithAlpha(alpha));
+		break;
+	case IconLogin:
+		if(invert)
+			BlendChar({ x, y + 1 }, 0xE004, 0x000000_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y + 1 }, 0xE004, 0xFFFFFF_rgb .WithAlpha(alpha));
+		break;
+	case IconSimulationSettings:
+		if(invert)
+			BlendChar({ x, y + 1 }, 0xE04F, 0x000000_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y + 1 }, 0xE04F, 0xFFFFFF_rgb .WithAlpha(alpha));
+		break;
+	case IconRenderSettings:
+		if(invert)
+		{
+			BlendChar({ x, y + 1 }, 0xE058, 0xFF0000_rgb .WithAlpha(alpha));
+			BlendChar({ x, y + 1 }, 0xE059, 0x00FF00_rgb .WithAlpha(alpha));
+			BlendChar({ x, y + 1 }, 0xE05A, 0x0000FF_rgb .WithAlpha(alpha));
+		}
+		else
+		{
+			AddChar({ x, y + 1 }, 0xE058, 0xFF0000_rgb .WithAlpha(alpha));
+			AddChar({ x, y + 1 }, 0xE059, 0x00FF00_rgb .WithAlpha(alpha));
+			AddChar({ x, y + 1 }, 0xE05A, 0x0000FF_rgb .WithAlpha(alpha));
+		}
+		break;
+	case IconPause:
+		if(invert)
+			BlendChar({ x, y }, 0xE010, 0x000000_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y }, 0xE010, 0xFFFFFF_rgb .WithAlpha(alpha));
+		break;
+	case IconFavourite:
+		if(invert)
+			BlendChar({ x, y }, 0xE04C, 0x645020_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y }, 0xE04C, 0xC0A040_rgb .WithAlpha(alpha));
+		break;
+	case IconReport:
+		if(invert)
+			BlendChar({ x, y }, 0xE063, 0x8C8C00_rgb .WithAlpha(alpha));
+		else
+			BlendChar({ x, y }, 0xE063, 0xFFFF00_rgb .WithAlpha(alpha));
+		break;
+	case IconUsername:
+		if(invert)
+		{
+			BlendChar({ x, y }, 0xE00B, 0x204080_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE00A, 0x000000_rgb .WithAlpha(alpha));
+		}
+		else
+		{
+			BlendChar({ x, y }, 0xE00B, 0x204080_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE00A, 0xFFFFFF_rgb .WithAlpha(alpha));
+		}
+		break;
+	case IconPassword:
+		if(invert)
+		{
+			BlendChar({ x, y }, 0xE00C, 0xA09020_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE004, 0x000000_rgb .WithAlpha(alpha));
+		}
+		else
+		{
+			BlendChar({ x, y }, 0xE00C, 0xA09020_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE004, 0xFFFFFF_rgb .WithAlpha(alpha));
+		}
+		break;
 	case IconClose:
 		if(invert)
 			BlendChar({ x, y }, 0xE02A, 0x141414_rgb .WithAlpha(alpha));
 		else
 			BlendChar({ x, y }, 0xE02A, 0xE6E6E6_rgb .WithAlpha(alpha));
+		break;
+	case IconVoteSort:
+		if (invert)
+		{
+			BlendChar({ x, y }, 0xE029, 0x2C3020_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE028, 0x202C20_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE027, 0x808080_rgb .WithAlpha(alpha));
+		}
+		else
+		{
+			BlendChar({ x, y }, 0xE029, 0x903020_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE028, 0x209020_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE027, 0xFFFFFF_rgb .WithAlpha(alpha));
+		}
+		break;
+	case IconDateSort:
+		if (invert)
+		{
+			BlendChar({ x, y }, 0xE026, 0x202020_rgb .WithAlpha(alpha));
+		}
+		else
+		{
+			BlendChar({ x, y }, 0xE026, 0xFFFFFF_rgb .WithAlpha(alpha));
+		}
+		break;
+	case IconMyOwn:
+		if (invert)
+		{
+			BlendChar({ x, y }, 0xE014, 0xC0A040_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE013, 0x202020_rgb .WithAlpha(alpha));
+		}
+		else
+		{
+			BlendChar({ x, y }, 0xE014, 0xC0A040_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE013, 0xFFFFFF_rgb .WithAlpha(alpha));
+		}
+		break;
+	case IconSearch:
+		BlendChar({ x, y }, 0xE00E, 0x1E1EB4_rgb .WithAlpha(alpha));
+		BlendChar({ x, y }, 0xE00F, 0xFFFFFF_rgb .WithAlpha(alpha));
+		break;
+	case IconDelete:
+		if(invert)
+		{
+			BlendChar({ x, y }, 0xE006, 0x9F2F1F_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE005, 0x000000_rgb .WithAlpha(alpha));
+		}
+		else
+		{
+			BlendChar({ x, y }, 0xE006, 0x9F2F1F_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE005, 0xFFFFFF_rgb .WithAlpha(alpha));
+		}
+		break;
+	case IconAdd:
+		if(invert)
+		{
+			BlendChar({ x, y }, 0xE006, 0x209020_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE009, 0x000000_rgb .WithAlpha(alpha));
+		}
+		else
+		{
+			BlendChar({ x, y }, 0xE006, 0x209020_rgb .WithAlpha(alpha));
+			BlendChar({ x, y }, 0xE009, 0xFFFFFF_rgb .WithAlpha(alpha));
+		}
 		break;
 	case IconVelocity:
 		BlendChar({ x + 1, y }, 0xE018, 0x80A0FF_rgb .WithAlpha(alpha));
@@ -254,219 +434,6 @@ void Graphics::draw_icon(int x, int y, Icon icon, unsigned char alpha, bool inve
 			BlendChar({ x + 1, y + 1 }, 0xE054, 0xFF3737_rgb .WithAlpha(alpha));
 			BlendChar({ x + 1, y + 1 }, 0xE055, 0x37FF37_rgb .WithAlpha(alpha));
 		}
-		break;
-	case IconConsole:
-		if(invert)
-			BlendChar({ x, y }, 0xE110, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE110, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconStamp:
-		if(invert)
-			BlendChar({ x, y }, 0xE111, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE111, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconUseStamp:
-		if(invert)
-			BlendChar({ x, y }, 0xE112, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE112, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;	
-	case IconAdd:
-		if(invert)
-			BlendChar({ x, y }, 0xE710, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE710, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconSimulationSettings:
-		if(invert)
-			BlendChar({ x, y }, 0xE713, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE713, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconSearch:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE721, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE721, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconFavoriteList:
-		if (invert)
-			BlendChar({ x, y + 2 }, 0xE728, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE728, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconReload:
-		if(invert)
-			BlendChar({ x, y }, 0xE72C, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE72C, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconFavourite:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE734, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE734, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconApp:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE74C, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE74C, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconDelete:
-		if(invert)
-			BlendChar({ x, y }, 0xE74D, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE74D, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconSave:
-		if(invert)
-			BlendChar({ x, y }, 0xE74E, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE74E, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconDialpad:
-		BlendChar({ x, y + 2 }, 0xE75F, 0x000000_rgb .WithAlpha(alpha));
-		break;
-	case IconPause:
-		if(invert)
-			BlendChar({ x, y }, 0xE768, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE769, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconRenderSettings:
-		if(invert)	
-			BlendChar({ x, y }, 0xE771, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE771, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconGlobe:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE774, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE774, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconContact:
-		if (invert)
-			BlendChar({ x, y + 2 }, 0xE77B, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE77B, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconPaste:
-		if(invert)
-			BlendChar({ x, y }, 0xE77F, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE77F, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconReport:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE789, 0x8C8C00_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE789, 0xFFFF00_rgb .WithAlpha(alpha));
-		break;
-	case IconRedo:
-		if(invert)
-			BlendChar({ x, y }, 0xE7A6, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE7A6, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconUndo:
-		if(invert)
-			BlendChar({ x, y }, 0xE7A7, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE7A7, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconNew:
-		if(invert)
-			BlendChar({ x, y }, 0xE7C3, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE7C3, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconHome:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE80F, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE80F, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconOpen:
-		if(invert)
-			BlendChar({ x, y }, 0xE838, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE838, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconDownload:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE896, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE896, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconUpload:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE898, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE898, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconViewAll:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE8A9, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE8A9, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconCut:
-		if(invert)
-			BlendChar({ x, y }, 0xE8C6, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE8C6, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconCopy:
-		if(invert)
-			BlendChar({ x, y }, 0xE8C8, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE8C8, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconSort:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE8CB, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE8CB, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconVoteDown:
-		if(invert)
-			BlendChar({ x, y }, 0xE8E0, 0x6A0A00_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE8E0, 0xBB2800_rgb .WithAlpha(alpha));
-		break;
-	case IconVoteUp:
-		if(invert)
-			BlendChar({ x, y }, 0xE8E1, 0x006A00_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xE8E1, 0x00BB12_rgb .WithAlpha(alpha));
-		break;
-	case IconTag:
-		if(invert)
-			BlendChar({ x, y + 2 }, 0xE8EC, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y + 2 }, 0xE8EC, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconFastForward:
-		if(invert)
-			BlendChar({ x, y }, 0xEB9D, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xEB9D, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconDebug:
-		if(invert)
-			BlendChar({ x, y }, 0xEC7A, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xEC7A, 0xFFFFFF_rgb .WithAlpha(alpha));
-		break;
-	case IconClipboard:
-		if(invert)
-			BlendChar({ x, y }, 0xF0E3, 0x000000_rgb .WithAlpha(alpha));
-		else
-			BlendChar({ x, y }, 0xF0E3, 0xFFFFFF_rgb .WithAlpha(alpha));
 		break;
 	default:
 		if(invert)

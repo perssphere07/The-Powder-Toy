@@ -82,3 +82,19 @@ void AHeatOption::perform()
 {
 	m->SetAHeatEnable(!m->GetAHeatEnable());
 }
+
+
+
+ConsoleShowOption::ConsoleShowOption(GameModel * m, GameController * c_):
+QuickOption("C", "Show Console \bg(~)", m, Toggle)
+{
+	c = c_;
+}
+bool ConsoleShowOption::GetToggle()
+{
+	return 0;
+}
+void ConsoleShowOption::perform()
+{
+	c->ShowConsole();
+}

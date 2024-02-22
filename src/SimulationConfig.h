@@ -2,8 +2,8 @@
 #include <cstdint>
 #include <common/Vec2.h>
 
-constexpr int MENUSIZE = 78;
-constexpr int BARSIZE  = 0;
+constexpr int MENUSIZE = 40;
+constexpr int BARSIZE  = 17;
 
 constexpr float M_GRAV = 6.67300e-1f;
 
